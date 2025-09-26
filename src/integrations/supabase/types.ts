@@ -74,6 +74,47 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          movement_type: string
+          product_id: string
+          quantity: number
+          reason: string | null
+          reference_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          movement_type: string
+          product_id: string
+          quantity: number
+          reason?: string | null
+          reference_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          movement_type?: string
+          product_id?: string
+          quantity?: number
+          reason?: string | null
+          reference_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -176,48 +217,166 @@ export type Database = {
         }
         Relationships: []
       }
+      product_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          helpful_count: number | null
+          id: string
+          is_verified_purchase: boolean | null
+          product_id: string
+          rating: number
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          product_id: string
+          rating: number
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          product_id?: string
+          rating?: number
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          price_adjustment: number | null
+          product_id: string
+          size: string | null
+          sku: string | null
+          stock_quantity: number | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          price_adjustment?: number | null
+          product_id: string
+          size?: string | null
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          price_adjustment?: number | null
+          product_id?: string
+          size?: string | null
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
+          brand: string | null
           category_id: string | null
+          color_options: string[] | null
           created_at: string
           description: string | null
+          dimensions: Json | null
           id: string
           image: string
           is_active: boolean
           is_featured: boolean
           name: string
           price: number
+          seo_description: string | null
+          seo_title: string | null
+          size_options: string[] | null
+          sku: string | null
           slug: string
           stock_quantity: number
           updated_at: string
+          weight: number | null
         }
         Insert: {
+          brand?: string | null
           category_id?: string | null
+          color_options?: string[] | null
           created_at?: string
           description?: string | null
+          dimensions?: Json | null
           id?: string
           image: string
           is_active?: boolean
           is_featured?: boolean
           name: string
           price: number
+          seo_description?: string | null
+          seo_title?: string | null
+          size_options?: string[] | null
+          sku?: string | null
           slug: string
           stock_quantity?: number
           updated_at?: string
+          weight?: number | null
         }
         Update: {
+          brand?: string | null
           category_id?: string | null
+          color_options?: string[] | null
           created_at?: string
           description?: string | null
+          dimensions?: Json | null
           id?: string
           image?: string
           is_active?: boolean
           is_featured?: boolean
           name?: string
           price?: number
+          seo_description?: string | null
+          seo_title?: string | null
+          size_options?: string[] | null
+          sku?: string | null
           slug?: string
           stock_quantity?: number
           updated_at?: string
+          weight?: number | null
         }
         Relationships: [
           {
@@ -310,6 +469,56 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -319,9 +528,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "customer" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -448,6 +664,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "customer", "staff"],
+    },
   },
 } as const
