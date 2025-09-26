@@ -2,41 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* The Style Yard - Luxury Fashion E-commerce Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Brand Colors - Luxury Fashion Palette */
+    --background: 35 12% 97%;
+    --foreground: 218 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 218 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 218 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep Charcoal */
+    --primary: 218 15% 15%;
+    --primary-foreground: 35 12% 97%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Warm Cream */
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 218 15% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Soft Gray */
+    --muted: 210 20% 94%;
+    --muted-foreground: 218 8% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Luxury Gold */
+    --accent: 42 78% 65%;
+    --accent-foreground: 218 15% 15%;
+
+    /* Luxury Rose */
+    --luxury-rose: 350 35% 75%;
+    --luxury-rose-foreground: 218 15% 15%;
+
+    /* Premium Variants */
+    --hero-bg: 218 15% 12%;
+    --hero-text: 35 12% 97%;
+    --premium-gold: 42 85% 55%;
+    --soft-rose: 350 25% 85%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 20% 88%;
+    --input: 210 20% 94%;
+    --ring: 42 78% 65%;
 
     --radius: 0.5rem;
+
+    /* Premium Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--hero-bg)), hsl(218 20% 20%));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--premium-gold)), hsl(42 70% 70%));
+    --gradient-rose: linear-gradient(135deg, hsl(var(--luxury-rose)), hsl(var(--soft-rose)));
+    --gradient-elegant: linear-gradient(180deg, hsl(var(--background)), hsl(210 15% 95%));
+
+    /* Luxury Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(218 15% 15% / 0.1);
+    --shadow-premium: 0 20px 60px -15px hsl(218 15% 15% / 0.15);
+    --shadow-gold: 0 8px 25px -8px hsl(42 78% 65% / 0.3);
+
+    /* Animations */
+    --transition-luxury: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s ease-out;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +128,107 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-light;
+  }
+}
+
+@layer components {
+  /* Loading Animation */
+  .loading-spinner {
+    @apply inline-block w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin;
+  }
+
+  /* Luxury Button Variants */
+  .btn-hero {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5;
+  }
+
+  .btn-gold {
+    background: var(--gradient-gold);
+    @apply text-primary shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105;
+  }
+
+  /* Product Cards */
+  .product-card {
+    @apply bg-card border border-border/50 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .product-card:hover {
+    @apply border-accent/30 shadow-xl;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    background: var(--gradient-hero);
+    @apply text-primary-foreground;
+  }
+
+  /* Elegant Animations */
+  .fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .fade-in-scale {
+    animation: fadeInScale 0.5s ease-out forwards;
+  }
+
+  .luxury-hover {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+  }
+}
+
+@layer utilities {
+  /* Custom Keyframes */
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInScale {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  @keyframes brandReveal {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateY(20px);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05) translateY(-5px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* Loading States */
+  .skeleton {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted)/0.5) 50%, hsl(var(--muted)) 75%);
+    background-size: 2000px 100%;
+    animation: shimmer 1.5s infinite;
   }
 }
