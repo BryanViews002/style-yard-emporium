@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
   const location = useLocation();
 
   const navItems = [
@@ -18,6 +22,15 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Signed out successfully");
+    } catch (error) {
+      toast.error("Error signing out");
+    }
   };
 
   return (
@@ -54,9 +67,35 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
             <Button variant="ghost" size="sm">
               <Search className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm">
-              <User className="h-4 w-4" />
-            </Button>
+            
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin" className="flex items-center cursor-pointer">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Admin Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/auth">
+                  <User className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
             <Link to="/cart">
               <Button variant="ghost" size="sm" className="relative">
                 <ShoppingBag className="h-4 w-4" />
@@ -113,10 +152,30 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                 <Search className="h-4 w-4 mr-2" />
                 Search
               </Button>
-              <Button variant="ghost" size="sm">
-                <User className="h-4 w-4 mr-2" />
-                Account
-              </Button>
+              {user ? (
+                <>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Admin
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    handleSignOut();
+                    setIsMobileMenuOpen(false);
+                  }}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>
