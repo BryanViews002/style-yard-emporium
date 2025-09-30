@@ -189,10 +189,9 @@ const Cart = () => {
             <Button 
               size="lg" 
               className="w-full mt-6 btn-hero"
-              onClick={handleCheckout}
-              disabled={isCheckingOut}
+              asChild
             >
-              {isCheckingOut ? "Processing..." : "Proceed to Checkout"}
+              <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
 
             <p className="text-xs text-muted-foreground mt-4 text-center">

@@ -82,6 +82,18 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                       Admin Dashboard
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/products" className="flex items-center cursor-pointer">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Products
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/users" className="flex items-center cursor-pointer">
+                      <User className="h-4 w-4 mr-2" />
+                      Users
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="flex items-center cursor-pointer">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -158,6 +170,18 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                     <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
                       <Shield className="h-4 w-4 mr-2" />
                       Admin
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/admin/products" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Products
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/admin/users" onClick={() => setIsMobileMenuOpen(false)}>
+                      <User className="h-4 w-4 mr-2" />
+                      Users
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => {

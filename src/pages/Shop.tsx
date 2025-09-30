@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Filter, X } from "lucide-react";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { addToCart } = useCart();
+  const { data: products = [], isLoading } = useProducts();
   
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [showFilters, setShowFilters] = useState(false);
@@ -22,6 +23,7 @@ const Shop = () => {
   });
 
   useEffect(() => {
+    if (!products.length) return;
     let result = [...products];
 
     // Filter by category
@@ -53,7 +55,7 @@ const Shop = () => {
     });
 
     setFilteredProducts(result);
-  }, [filters]);
+  }, [filters, products]);
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -78,6 +80,14 @@ const Shop = () => {
     });
     setSearchParams({});
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading products...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-8">

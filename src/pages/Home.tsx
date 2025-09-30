@@ -3,12 +3,13 @@ import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { getFeaturedProducts } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 
 const Home = () => {
   const { addToCart } = useCart();
-  const featuredProducts = getFeaturedProducts(4);
+  const { data: allProducts = [] } = useProducts();
+  const featuredProducts = allProducts.filter(p => p.is_featured).slice(0, 4);
 
   return (
     <div className="min-h-screen">
