@@ -8,10 +8,7 @@ import { Loader2 } from "lucide-react";
 
 interface OrderItem {
   id: string;
-  product_snapshot: {
-    name: string;
-    image: string;
-  };
+  product_snapshot: any;
   quantity: number;
   unit_price: number;
   total_price: number;

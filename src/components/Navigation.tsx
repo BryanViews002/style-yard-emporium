@@ -77,6 +77,12 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
+                    <Link to="/orders" className="flex items-center cursor-pointer">
+                      <User className="h-4 w-4 mr-2" />
+                      My Orders
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/admin" className="flex items-center cursor-pointer">
                       <Shield className="h-4 w-4 mr-2" />
                       Admin Dashboard
@@ -86,6 +92,12 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                     <Link to="/admin/products" className="flex items-center cursor-pointer">
                       <Shield className="h-4 w-4 mr-2" />
                       Products
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/orders" className="flex items-center cursor-pointer">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Orders
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -167,6 +179,12 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
               {user ? (
                 <>
                   <Button variant="ghost" size="sm" asChild>
+                    <Link to="/orders" onClick={() => setIsMobileMenuOpen(false)}>
+                      <User className="h-4 w-4 mr-2" />
+                      My Orders
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
                     <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
                       <Shield className="h-4 w-4 mr-2" />
                       Admin
@@ -176,6 +194,12 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                     <Link to="/admin/products" onClick={() => setIsMobileMenuOpen(false)}>
                       <Shield className="h-4 w-4 mr-2" />
                       Products
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/admin/orders" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Orders
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm" asChild>

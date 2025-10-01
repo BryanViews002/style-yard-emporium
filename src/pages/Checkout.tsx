@@ -94,6 +94,18 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
+      // Update inventory for each product
+      for (const item of items) {
+        const { error: inventoryError } = await supabase.rpc("update_inventory", {
+          p_product_id: item.id,
+          p_quantity: -item.quantity,
+        });
+
+        if (inventoryError) {
+          console.error("Inventory update error:", inventoryError);
+        }
+      }
+
       // Clear cart
       clearCart();
 

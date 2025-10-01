@@ -539,6 +539,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_inventory: {
+        Args: { p_product_id: string; p_quantity: number }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "customer" | "staff"

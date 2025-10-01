@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
+import { AdminBootstrap } from "@/components/AdminBootstrap";
 
 const Home = () => {
   const { addToCart } = useCart();
@@ -13,6 +14,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
+      <AdminBootstrap />
       <Hero />
       
       {/* Featured Categories */}
