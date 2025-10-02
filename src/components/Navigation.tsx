@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingBag, Menu, X, Search, User, LogOut, Shield } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, LogOut, Shield, Heart, UserCircle, BarChart, FolderTree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -77,11 +77,24 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center cursor-pointer">
+                      <UserCircle className="h-4 w-4 mr-2" />
+                      My Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/orders" className="flex items-center cursor-pointer">
-                      <User className="h-4 w-4 mr-2" />
+                      <ShoppingBag className="h-4 w-4 mr-2" />
                       My Orders
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/wishlist" className="flex items-center cursor-pointer">
+                      <Heart className="h-4 w-4 mr-2" />
+                      Wishlist
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link to="/admin" className="flex items-center cursor-pointer">
                       <Shield className="h-4 w-4 mr-2" />
@@ -104,6 +117,18 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                     <Link to="/admin/users" className="flex items-center cursor-pointer">
                       <User className="h-4 w-4 mr-2" />
                       Users
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/categories" className="flex items-center cursor-pointer">
+                      <FolderTree className="h-4 w-4 mr-2" />
+                      Categories
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/analytics" className="flex items-center cursor-pointer">
+                      <BarChart className="h-4 w-4 mr-2" />
+                      Analytics
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -179,33 +204,27 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
               {user ? (
                 <>
                   <Button variant="ghost" size="sm" asChild>
+                    <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                      <UserCircle className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
                     <Link to="/orders" onClick={() => setIsMobileMenuOpen(false)}>
-                      <User className="h-4 w-4 mr-2" />
-                      My Orders
+                      <ShoppingBag className="h-4 w-4 mr-2" />
+                      Orders
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Heart className="h-4 w-4 mr-2" />
+                      Wishlist
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm" asChild>
                     <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
                       <Shield className="h-4 w-4 mr-2" />
                       Admin
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/admin/products" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Shield className="h-4 w-4 mr-2" />
-                      Products
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/admin/orders" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Shield className="h-4 w-4 mr-2" />
-                      Orders
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/admin/users" onClick={() => setIsMobileMenuOpen(false)}>
-                      <User className="h-4 w-4 mr-2" />
-                      Users
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => {

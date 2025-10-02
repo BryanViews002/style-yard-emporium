@@ -2,33 +2,105 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Heart, ShoppingBag, Star } from "lucide-react";
 import { useProduct } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: product, isLoading } = useProduct(id || "");
   
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", comment: "" });
 
   useEffect(() => {
     if (product) {
-      // Set default selections
       if (product.sizes && product.sizes.length > 0) {
         setSelectedSize(product.sizes[0]);
       }
       if (product.colors && product.colors.length > 0) {
         setSelectedColor(product.colors[0]);
       }
+      loadReviews();
+      checkWishlist();
     }
-  }, [product]);
+  }, [product, user]);
+
+  const loadReviews = async () => {
+    if (!id) return;
+    const { data } = await supabase
+      .from("product_reviews")
+      .select("*")
+      .eq("product_id", id)
+      .order("created_at", { ascending: false });
+    
+    setReviews(data || []);
+  };
+
+  const checkWishlist = async () => {
+    if (!user || !id) return;
+    const { data } = await supabase
+      .from("wishlists")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("product_id", id)
+      .maybeSingle();
+    
+    setIsFavorite(!!data);
+  };
+
+  const toggleWishlist = async () => {
+    if (!user) {
+      toast({ title: "Please log in to add to wishlist", variant: "destructive" });
+      return;
+    }
+
+    if (isFavorite) {
+      await supabase.from("wishlists").delete().eq("user_id", user.id).eq("product_id", id);
+      toast({ title: "Removed from wishlist" });
+    } else {
+      await supabase.from("wishlists").insert({ user_id: user.id, product_id: id });
+      toast({ title: "Added to wishlist" });
+    }
+    setIsFavorite(!isFavorite);
+  };
+
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      toast({ title: "Please log in to leave a review", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("product_reviews").insert({
+        product_id: id,
+        user_id: user.id,
+        rating: reviewForm.rating,
+        title: reviewForm.title,
+        comment: reviewForm.comment,
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Review submitted successfully" });
+      setReviewForm({ rating: 5, title: "", comment: "" });
+      loadReviews();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -117,9 +189,9 @@ const ProductDetail = () => {
                 </span>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-accent text-accent" />
+                    <Star key={i} className={`h-4 w-4 ${reviews.length > 0 && (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) > i ? "fill-accent text-accent" : "text-muted"}`} />
                   ))}
-                  <span className="text-muted-foreground text-sm ml-2">(24 reviews)</span>
+                  <span className="text-muted-foreground text-sm ml-2">({reviews.length} reviews)</span>
                 </div>
               </div>
               <p className="text-muted-foreground leading-relaxed text-lg">
@@ -208,9 +280,9 @@ const ProductDetail = () => {
                 variant="outline" 
                 size="lg" 
                 className="w-full"
-                onClick={() => setIsFavorite(!isFavorite)}
+                onClick={toggleWishlist}
               >
-                <Heart className={`mr-2 h-5 w-5 ${isFavorite ? "fill-current text-luxury-rose" : ""}`} />
+                <Heart className={`mr-2 h-5 w-5 ${isFavorite ? "fill-current text-accent" : ""}`} />
                 {isFavorite ? "Remove from Wishlist" : "Add to Wishlist"}
               </Button>
             </div>
@@ -226,6 +298,76 @@ const ProductDetail = () => {
                 <li>• Size guide available</li>
               </ul>
             </div>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-16">
+          <h2 className="text-3xl font-light tracking-wider text-primary mb-8">Customer Reviews</h2>
+          
+          {/* Review Form */}
+          {user && (
+            <div className="mb-8 p-6 border rounded-lg">
+              <h3 className="text-xl font-medium mb-4">Write a Review</h3>
+              <form onSubmit={submitReview} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Rating</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <button
+                        key={rating}
+                        type="button"
+                        onClick={() => setReviewForm({ ...reviewForm, rating })}
+                      >
+                        <Star className={`h-6 w-6 ${reviewForm.rating >= rating ? "fill-accent text-accent" : "text-muted"}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Title</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-3 py-2 border rounded"
+                    value={reviewForm.title}
+                    onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Review</label>
+                  <Textarea
+                    required
+                    rows={4}
+                    value={reviewForm.comment}
+                    onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                  />
+                </div>
+                <Button type="submit" className="btn-hero">Submit Review</Button>
+              </form>
+            </div>
+          )}
+
+          {/* Reviews List */}
+          <div className="space-y-6">
+            {reviews.length === 0 ? (
+              <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
+            ) : (
+              reviews.map((review) => (
+                <div key={review.id} className="border-b pb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`h-4 w-4 ${review.rating > i ? "fill-accent text-accent" : "text-muted"}`} />
+                    ))}
+                  </div>
+                  <h4 className="font-medium text-lg mb-2">{review.title}</h4>
+                  <p className="text-muted-foreground mb-2">{review.comment}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export interface Product {
   id: string;
@@ -18,17 +21,48 @@ export interface Product {
 interface ProductCardProps {
   product: Product;
   onAddToCart?: (product: Product) => void;
-  onToggleFavorite?: (productId: string) => void;
-  isFavorite?: boolean;
 }
 
 const ProductCard = ({ 
   product, 
   onAddToCart, 
-  onToggleFavorite, 
-  isFavorite = false 
 }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    checkWishlist();
+  }, [user, product.id]);
+
+  const checkWishlist = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("wishlists")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("product_id", product.id)
+      .maybeSingle();
+    
+    setIsFavorite(!!data);
+  };
+
+  const toggleWishlist = async () => {
+    if (!user) {
+      toast({ title: "Please log in to add to wishlist", variant: "destructive" });
+      return;
+    }
+
+    if (isFavorite) {
+      await supabase.from("wishlists").delete().eq("user_id", user.id).eq("product_id", product.id);
+      toast({ title: "Removed from wishlist" });
+    } else {
+      await supabase.from("wishlists").insert({ user_id: user.id, product_id: product.id });
+      toast({ title: "Added to wishlist" });
+    }
+    setIsFavorite(!isFavorite);
+  };
 
   return (
     <div 
@@ -60,8 +94,8 @@ const ProductCard = ({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onToggleFavorite?.(product.id)}
-            className={isFavorite ? "bg-luxury-rose text-luxury-rose-foreground" : ""}
+            onClick={toggleWishlist}
+            className={isFavorite ? "bg-accent text-accent-foreground" : ""}
           >
             <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
           </Button>

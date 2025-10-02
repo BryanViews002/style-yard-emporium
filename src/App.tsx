@@ -19,7 +19,11 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminProducts from "./pages/AdminProducts";
 import AdminOrders from "./pages/AdminOrders";
 import AdminUsers from "./pages/AdminUsers";
+import AdminCategories from "./pages/AdminCategories";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import Orders from "./pages/Orders";
+import Wishlist from "./pages/Wishlist";
+import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 import { useCart } from "@/context/CartContext";
@@ -66,7 +70,11 @@ const AppContent = () => {
         <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/categories" element={<AdminCategories />} />
+        <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/profile" element={<Profile />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
