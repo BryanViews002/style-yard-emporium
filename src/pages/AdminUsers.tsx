@@ -56,34 +56,19 @@ const AdminUsers = () => {
 
   const loadUsers = async () => {
     try {
-      // Get all profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("user_id, created_at")
-        .order("created_at", { ascending: false });
+      // Call edge function to get users with emails
+      const { data: functionData, error: functionError } = await supabase.functions.invoke(
+        "get-admin-users",
+        {
+          headers: {
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+        }
+      );
 
-      if (profilesError) throw profilesError;
+      if (functionError) throw functionError;
 
-      // Get all user roles
-      const { data: roles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-
-      if (rolesError) throw rolesError;
-
-      // We need to get user emails from auth.users which requires admin access
-      // For now, we'll just show user IDs. In a real app, you'd use an admin API or edge function
-      const usersWithRoles: UserWithRole[] = profiles.map((profile) => {
-        const userRoles = roles.filter((r) => r.user_id === profile.user_id).map((r) => r.role);
-        return {
-          id: profile.user_id,
-          email: `user-${profile.user_id.substring(0, 8)}`, // Placeholder since we can't access auth.users directly
-          created_at: profile.created_at,
-          roles: userRoles,
-        };
-      });
-
-      setUsers(usersWithRoles);
+      setUsers(functionData.users || []);
     } catch (error: any) {
       toast({
         title: "Error",

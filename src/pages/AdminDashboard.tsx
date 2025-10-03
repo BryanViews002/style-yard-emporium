@@ -51,23 +51,25 @@ const AdminDashboard = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user?.id)
-        .single();
+        .eq("role", "admin")
+        .maybeSingle();
 
-      if (error) {
-        console.error("Error checking admin status:", error);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(data?.role === "admin");
-        if (data?.role === "admin") {
-          await loadDashboardData();
-        } else {
-          toast.error("Access denied. Admin privileges required.");
-          navigate("/");
-        }
+      if (error || !data) {
+        toast.error("Access Denied", {
+          description: "You don't have admin privileges.",
+        });
+        navigate("/");
+        return;
       }
+
+      setIsAdmin(true);
+      await loadDashboardData();
     } catch (error) {
       console.error("Error:", error);
-      setIsAdmin(false);
+      toast.error("Error", {
+        description: "Failed to verify admin status.",
+      });
+      navigate("/");
     } finally {
       setIsLoading(false);
     }
