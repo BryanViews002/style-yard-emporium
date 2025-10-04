@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 const Cart = () => {
   const { items, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (items.length === 0) {
       toast({
         title: "Cart is empty",
@@ -20,15 +23,17 @@ const Cart = () => {
       return;
     }
 
-    setIsCheckingOut(true);
-    // Simulate checkout process
-    setTimeout(() => {
+    if (!user) {
       toast({
-        title: "Checkout Required",
-        description: "Please connect Supabase to enable Stripe payments and complete checkout.",
+        title: "Authentication Required",
+        description: "Please sign in to proceed with checkout.",
+        variant: "destructive",
       });
-      setIsCheckingOut(false);
-    }, 1000);
+      navigate("/auth");
+      return;
+    }
+
+    navigate("/checkout");
   };
 
   if (items.length === 0) {
@@ -189,12 +194,19 @@ const Cart = () => {
             <Button 
               size="lg" 
               className="w-full mt-6 btn-hero"
-              asChild
+              onClick={handleCheckout}
+              disabled={isCheckingOut}
             >
-              <Link to="/checkout">Proceed to Checkout</Link>
+              {user ? "Proceed to Checkout" : "Sign In to Checkout"}
             </Button>
 
-            <p className="text-xs text-muted-foreground mt-4 text-center">
+            {!user && (
+              <p className="text-xs text-muted-foreground mt-4 text-center">
+                You must be signed in to complete your purchase
+              </p>
+            )}
+            
+            <p className="text-xs text-muted-foreground mt-2 text-center">
               Secure checkout powered by Stripe
             </p>
           </div>
