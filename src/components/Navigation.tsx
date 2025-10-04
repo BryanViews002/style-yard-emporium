@@ -188,68 +188,77 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-border/50 bg-background">
-          <div className="px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-sm">
+          <div className="px-4 py-4 space-y-3 max-h-[calc(100vh-4rem)] overflow-y-auto">
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.href}
-                className={`block text-sm font-light tracking-wide transition-colors duration-300 ${
-                  isActive(item.href) ? "text-accent" : "text-muted-foreground"
+                className={`block py-2 text-base font-light tracking-wide transition-colors duration-300 ${
+                  isActive(item.href) ? "text-accent font-medium" : "text-muted-foreground"
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {item.label}
               </Link>
             ))}
-            <div className="flex items-center space-x-4 pt-4 border-t border-border/50">
-              <Button variant="ghost" size="sm">
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </Button>
+            <div className="pt-4 border-t border-border/50 space-y-2">
               {user ? (
                 <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
-                      <UserCircle className="h-4 w-4 mr-2" />
-                      Profile
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/orders" onClick={() => setIsMobileMenuOpen(false)}>
-                      <ShoppingBag className="h-4 w-4 mr-2" />
-                      Orders
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Heart className="h-4 w-4 mr-2" />
-                      Wishlist
-                    </Link>
-                  </Button>
+                  <Link 
+                    to="/profile" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center py-2 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <UserCircle className="h-5 w-5 mr-3" />
+                    <span>My Profile</span>
+                  </Link>
+                  <Link 
+                    to="/orders" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center py-2 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <ShoppingBag className="h-5 w-5 mr-3" />
+                    <span>My Orders</span>
+                  </Link>
+                  <Link 
+                    to="/wishlist" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center py-2 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Heart className="h-5 w-5 mr-3" />
+                    <span>Wishlist</span>
+                  </Link>
                   {isAdmin && (
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Shield className="h-4 w-4 mr-2" />
-                        Admin
-                      </Link>
-                    </Button>
+                    <Link 
+                      to="/admin" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center py-2 text-accent hover:text-accent/80 transition-colors"
+                    >
+                      <Shield className="h-5 w-5 mr-3" />
+                      <span>Admin Dashboard</span>
+                    </Link>
                   )}
-                  <Button variant="ghost" size="sm" onClick={() => {
-                    handleSignOut();
-                    setIsMobileMenuOpen(false);
-                  }}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
+                  <button 
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center w-full py-2 text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <LogOut className="h-5 w-5 mr-3" />
+                    <span>Sign Out</span>
+                  </button>
                 </>
               ) : (
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                    <User className="h-4 w-4 mr-2" />
-                    Sign In
-                  </Link>
-                </Button>
+                <Link 
+                  to="/auth" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center py-2 text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <User className="h-5 w-5 mr-3" />
+                  <span>Sign In / Sign Up</span>
+                </Link>
               )}
             </div>
           </div>

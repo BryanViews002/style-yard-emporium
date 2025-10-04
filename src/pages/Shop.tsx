@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "@/components/ProductCard";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Search } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +18,11 @@ const Shop = () => {
   
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 9;
+  
   const [filters, setFilters] = useState({
     category: searchParams.get("category") || "all",
     priceRange: [0, 500],
@@ -23,12 +31,34 @@ const Shop = () => {
   });
 
   useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    const { data } = await supabase
+      .from("categories")
+      .select("*")
+      .order("name");
+    setCategories(data || []);
+  };
+
+  useEffect(() => {
     if (!products.length) return;
     let result = [...products];
 
-    // Filter by category
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(product =>
+        product.name.toLowerCase().includes(query) ||
+        product.description?.toLowerCase().includes(query) ||
+        product.category?.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by category ID
     if (filters.category !== "all") {
-      result = result.filter(product => product.category === filters.category);
+      result = result.filter(product => product.category_id === filters.category);
     }
 
     // Filter by price range
@@ -38,7 +68,7 @@ const Shop = () => {
 
     // Filter by stock
     if (filters.inStock) {
-      result = result.filter(product => product.inStock !== false);
+      result = result.filter(product => product.stock_quantity > 0);
     }
 
     // Sort products
@@ -55,7 +85,8 @@ const Shop = () => {
     });
 
     setFilteredProducts(result);
-  }, [filters, products]);
+    setCurrentPage(1); // Reset to first page on filter change
+  }, [filters, products, searchQuery]);
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -78,13 +109,32 @@ const Shop = () => {
       sortBy: "name",
       inStock: false,
     });
+    setSearchQuery("");
     setSearchParams({});
   };
 
+  // Pagination
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading products...</p>
+      <div className="min-h-screen py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <div className="h-12 w-64 bg-muted animate-pulse rounded mb-2" />
+            <div className="h-6 w-96 bg-muted animate-pulse rounded" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -95,13 +145,25 @@ const Shop = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-5xl font-light tracking-wider text-primary mb-4">
-            {filters.category === "all" ? "All Products" : 
-             filters.category === "clothes" ? "Clothing Collection" : 
-             "Jewelry Collection"}
+            Shop Our Collection
           </h1>
           <p className="text-muted-foreground text-lg font-light">
             Discover our carefully curated selection
           </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-12"
+            />
+          </div>
         </div>
 
         {/* Filters Bar */}
@@ -138,8 +200,11 @@ const Shop = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Items</SelectItem>
-                    <SelectItem value="clothes">Clothes</SelectItem>
-                    <SelectItem value="jewelry">Jewelry</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -194,9 +259,9 @@ const Shop = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProducts.map((product) => (
-                <div key={product.id} className="animate-fade-in-scale">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+              {currentProducts.map((product) => (
+                <div key={product.id} className="animate-fade-in">
                   <ProductCard 
                     product={product}
                     onAddToCart={addToCart}
@@ -204,6 +269,36 @@ const Shop = () => {
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                {[...Array(totalPages)].map((_, index) => (
+                  <Button
+                    key={index}
+                    variant={currentPage === index + 1 ? "default" : "outline"}
+                    onClick={() => paginate(index + 1)}
+                    className="min-w-[40px]"
+                  >
+                    {index + 1}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
 
             {/* No Products Message */}
             {filteredProducts.length === 0 && (

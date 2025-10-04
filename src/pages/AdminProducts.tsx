@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Package } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import ImageUpload from "@/components/ImageUpload";
 
 interface Product {
   id: string;
@@ -278,10 +279,11 @@ const AdminProducts = () => {
                     <Input id="stock_quantity" name="stock_quantity" type="number" required value={formData.stock_quantity} onChange={handleInputChange} />
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="image">Image URL</Label>
-                  <Input id="image" name="image" required value={formData.image} onChange={handleInputChange} />
-                </div>
+                <ImageUpload
+                  currentImage={formData.image}
+                  onImageUploaded={(url) => setFormData({ ...formData, image: url })}
+                  onRemove={() => setFormData({ ...formData, image: "" })}
+                />
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="sku">SKU</Label>

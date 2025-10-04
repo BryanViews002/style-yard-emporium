@@ -104,8 +104,25 @@ const ProductDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading product...</p>
+      <div className="min-h-screen py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <div className="aspect-square bg-muted animate-pulse rounded-lg" />
+              <div className="grid grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="aspect-square bg-muted animate-pulse rounded" />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div className="h-8 bg-muted animate-pulse rounded w-3/4" />
+              <div className="h-12 bg-muted animate-pulse rounded w-1/2" />
+              <div className="h-24 bg-muted animate-pulse rounded" />
+              <div className="h-48 bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
