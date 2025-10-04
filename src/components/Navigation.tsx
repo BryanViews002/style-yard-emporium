@@ -3,12 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import { ShoppingBag, Menu, X, Search, User, LogOut, Shield, Heart, UserCircle, BarChart, FolderTree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
 const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdminCheck();
   const location = useLocation();
 
   const navItems = [
@@ -94,43 +96,47 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                       Wishlist
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin" className="flex items-center cursor-pointer">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Admin Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin/products" className="flex items-center cursor-pointer">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Products
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin/orders" className="flex items-center cursor-pointer">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Orders
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin/users" className="flex items-center cursor-pointer">
-                      <User className="h-4 w-4 mr-2" />
-                      Users
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin/categories" className="flex items-center cursor-pointer">
-                      <FolderTree className="h-4 w-4 mr-2" />
-                      Categories
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin/analytics" className="flex items-center cursor-pointer">
-                      <BarChart className="h-4 w-4 mr-2" />
-                      Analytics
-                    </Link>
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center cursor-pointer">
+                          <Shield className="h-4 w-4 mr-2" />
+                          Admin Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/products" className="flex items-center cursor-pointer">
+                          <Shield className="h-4 w-4 mr-2" />
+                          Products
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/orders" className="flex items-center cursor-pointer">
+                          <Shield className="h-4 w-4 mr-2" />
+                          Orders
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/users" className="flex items-center cursor-pointer">
+                          <User className="h-4 w-4 mr-2" />
+                          Users
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/categories" className="flex items-center cursor-pointer">
+                          <FolderTree className="h-4 w-4 mr-2" />
+                          Categories
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/analytics" className="flex items-center cursor-pointer">
+                          <BarChart className="h-4 w-4 mr-2" />
+                          Analytics
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="flex items-center cursor-pointer">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -221,12 +227,14 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                       Wishlist
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Shield className="h-4 w-4 mr-2" />
-                      Admin
-                    </Link>
-                  </Button>
+                  {isAdmin && (
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin
+                      </Link>
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" onClick={() => {
                     handleSignOut();
                     setIsMobileMenuOpen(false);
