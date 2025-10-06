@@ -41,6 +41,35 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
+      // Validate stock before proceeding
+      const stockValidation = await supabase.functions.invoke('validate-stock', {
+        body: {
+          items: items.map(item => ({
+            productId: item.id,
+            quantity: item.quantity
+          }))
+        }
+      });
+
+      if (stockValidation.error) {
+        throw new Error('Failed to validate stock');
+      }
+
+      if (!stockValidation.data.valid) {
+        const issues = stockValidation.data.issues;
+        const issueMessages = issues.map((issue: any) => 
+          `${issue.productName}: Only ${issue.available} available (requested ${issue.requested})`
+        ).join('\n');
+        
+        toast({
+          title: "Stock Unavailable",
+          description: issueMessages,
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
       // Generate order number
       const orderNumber = `TSY-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
       
@@ -105,6 +134,11 @@ const Checkout = () => {
           console.error("Inventory update error:", inventoryError);
         }
       }
+
+      // Send order confirmation
+      await supabase.functions.invoke('send-order-confirmation', {
+        body: { orderId: order.id }
+      });
 
       // Clear cart
       clearCart();

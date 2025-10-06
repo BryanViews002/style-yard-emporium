@@ -1,1 +1,10 @@
 project_id = "ngniknstgjpwgnyewpll"
+
+[functions.handle-contact-form]
+verify_jwt = false
+
+[functions.send-order-confirmation]
+verify_jwt = false
+
+[functions.validate-stock]
+verify_jwt = true

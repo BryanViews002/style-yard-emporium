@@ -17,27 +17,48 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    // Basic form validation
+    
     if (!formData.name || !formData.email || !formData.message) {
       toast({
         title: "Please fill in all required fields",
         variant: "destructive",
       });
-      setIsSubmitting(false);
       return;
     }
 
-    // Simulate form submission
-    setTimeout(() => {
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(
+        'https://ngniknstgjpwgnyewpll.supabase.co/functions/v1/handle-contact-form',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
       toast({
         title: "Message sent!",
         description: "Thank you for your message. We'll get back to you soon.",
       });
       setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      console.error('Contact form error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const handleWhatsAppClick = () => {

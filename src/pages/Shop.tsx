@@ -21,12 +21,13 @@ const Shop = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<string>("featured");
   const productsPerPage = 9;
   
   const [filters, setFilters] = useState({
     category: searchParams.get("category") || "all",
     priceRange: [0, 500],
-    sortBy: "name",
+    sortBy: sortBy,
     inStock: false,
   });
 
@@ -73,14 +74,16 @@ const Shop = () => {
 
     // Sort products
     result.sort((a, b) => {
-      switch (filters.sortBy) {
+      switch (sortBy) {
         case "price-low":
           return a.price - b.price;
         case "price-high":
           return b.price - a.price;
-        case "name":
+        case "newest":
+          return new Date((b as any).created_at || 0).getTime() - new Date((a as any).created_at || 0).getTime();
+        case "featured":
         default:
-          return a.name.localeCompare(b.name);
+          return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
       }
     });
 
@@ -246,12 +249,13 @@ const Shop = () => {
               <span className="text-muted-foreground">
                 {filteredProducts.length} products
               </span>
-              <Select value={filters.sortBy} onValueChange={(value) => handleFilterChange("sortBy", value)}>
+              <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="name">Sort by Name</SelectItem>
+                  <SelectItem value="featured">Featured</SelectItem>
+                  <SelectItem value="newest">Newest</SelectItem>
                   <SelectItem value="price-low">Price: Low to High</SelectItem>
                   <SelectItem value="price-high">Price: High to Low</SelectItem>
                 </SelectContent>

@@ -89,9 +89,16 @@ const AdminOrders = () => {
       const { error } = await supabase
         .from("orders")
         .update({ status: newStatus })
-        .eq("id", orderId);
+        .eq("id", orderId)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Send status update notification
+      await supabase.functions.invoke('send-order-confirmation', {
+        body: { orderId }
+      });
 
       toast({
         title: "Success",
