@@ -103,8 +103,15 @@ const ProductCard = ({
 
         {/* Stock Status */}
         {product.inStock === false && (
-          <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground px-2 py-1 text-xs rounded">
+          <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground px-3 py-1.5 text-xs font-medium rounded-full shadow-lg">
             Out of Stock
+          </div>
+        )}
+        
+        {/* Low Stock Warning */}
+        {product.inStock !== false && (product as any).stock_quantity && (product as any).stock_quantity <= 5 && (product as any).stock_quantity > 0 && (
+          <div className="absolute top-2 left-2 bg-amber-500 text-white px-3 py-1.5 text-xs font-medium rounded-full shadow-lg">
+            Only {(product as any).stock_quantity} left
           </div>
         )}
       </div>

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { OrderTrackingCard } from "@/components/OrderTrackingCard";
 
 interface OrderItem {
   id: string;
@@ -21,6 +22,8 @@ interface Order {
   status: string;
   total_amount: number;
   shipping_address: any;
+  tracking_number?: string;
+  tracking_url?: string;
   order_items?: OrderItem[];
 }
 
@@ -95,44 +98,42 @@ const Orders = () => {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <Card key={order.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">Order {order.order_number}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Placed on {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {getStatusBadge(order.status)}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {order.order_items?.map((item) => (
-                    <div key={item.id} className="flex gap-4">
-                      <img
-                        src={item.product_snapshot.image}
-                        alt={item.product_snapshot.name}
-                        className="w-20 h-20 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium">{item.product_snapshot.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Quantity: {item.quantity} × ${item.unit_price.toFixed(2)}
-                        </p>
+            <div key={order.id}>
+              <OrderTrackingCard
+                orderNumber={order.order_number}
+                status={order.status}
+                trackingNumber={order.tracking_number}
+                trackingUrl={order.tracking_url}
+                createdAt={order.created_at}
+              />
+              <Card className="mt-4">
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    {order.order_items?.map((item) => (
+                      <div key={item.id} className="flex gap-4">
+                        <img
+                          src={item.product_snapshot.image}
+                          alt={item.product_snapshot.name}
+                          className="w-20 h-20 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{item.product_snapshot.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Quantity: {item.quantity} × ${item.unit_price.toFixed(2)}
+                          </p>
+                        </div>
+                        <p className="font-medium">${item.total_price.toFixed(2)}</p>
                       </div>
-                      <p className="font-medium">${item.total_price.toFixed(2)}</p>
+                    ))}
+                    
+                    <div className="border-t pt-4 flex justify-between items-center">
+                      <p className="font-semibold">Total</p>
+                      <p className="text-xl font-bold">${order.total_amount.toFixed(2)}</p>
                     </div>
-                  ))}
-                  
-                  <div className="border-t pt-4 flex justify-between items-center">
-                    <p className="font-semibold">Total</p>
-                    <p className="text-xl font-bold">${order.total_amount.toFixed(2)}</p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
       )}

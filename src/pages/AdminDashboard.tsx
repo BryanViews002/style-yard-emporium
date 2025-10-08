@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Users, Package, TrendingUp, Eye, ArrowRight, FolderTree, BarChart3 } from "lucide-react";
+import { ShoppingBag, Users, Package, TrendingUp, Eye, ArrowRight, FolderTree, BarChart3, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -308,6 +308,24 @@ const AdminDashboard = () => {
                     <div>
                       <h3 className="font-medium text-primary">Analytics</h3>
                       <p className="text-sm text-muted-foreground">View sales reports</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="border-border/50 shadow-lg hover:shadow-xl transition-all cursor-pointer group"
+              onClick={() => navigate("/admin/coupons")}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Tag className="h-8 w-8 text-accent" />
+                    <div>
+                      <h3 className="font-medium text-primary">Coupons</h3>
+                      <p className="text-sm text-muted-foreground">Manage discounts</p>
                     </div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />

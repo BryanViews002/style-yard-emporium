@@ -8,7 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Order {
   id: string;
@@ -18,6 +21,8 @@ interface Order {
   total_amount: number;
   email: string;
   shipping_address: any;
+  tracking_number?: string;
+  tracking_url?: string;
 }
 
 const AdminOrders = () => {
@@ -27,6 +32,9 @@ const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [trackingForm, setTrackingForm] = useState({ tracking_number: "", tracking_url: "" });
 
   useEffect(() => {
     if (user) {
@@ -115,6 +123,36 @@ const AdminOrders = () => {
     }
   };
 
+  const updateTracking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOrder) return;
+
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({
+          tracking_number: trackingForm.tracking_number,
+          tracking_url: trackingForm.tracking_url,
+          status: "shipped",
+        })
+        .eq("id", selectedOrder.id);
+
+      if (error) throw error;
+
+      // Send notification
+      await supabase.functions.invoke('send-order-confirmation', {
+        body: { orderId: selectedOrder.id }
+      });
+
+      toast({ title: "Tracking information added" });
+      setTrackingDialogOpen(false);
+      setTrackingForm({ tracking_number: "", tracking_url: "" });
+      loadOrders();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       pending: "secondary",
@@ -155,6 +193,7 @@ const AdminOrders = () => {
                   <TableHead>Customer</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Tracking</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -166,6 +205,63 @@ const AdminOrders = () => {
                     <TableCell>{order.email}</TableCell>
                     <TableCell>${order.total_amount.toFixed(2)}</TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>
+                      {order.tracking_number ? (
+                        <span className="text-xs font-mono">{order.tracking_number}</span>
+                      ) : (
+                        <Dialog open={trackingDialogOpen && selectedOrder?.id === order.id} onOpenChange={(open) => {
+                          setTrackingDialogOpen(open);
+                          if (!open) setSelectedOrder(null);
+                        }}>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setTrackingForm({
+                                  tracking_number: order.tracking_number || "",
+                                  tracking_url: order.tracking_url || "",
+                                });
+                              }}
+                            >
+                              <Package className="h-4 w-4 mr-1" />
+                              Add
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Tracking Information</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={updateTracking} className="space-y-4">
+                              <div>
+                                <Label>Tracking Number</Label>
+                                <Input
+                                  required
+                                  value={trackingForm.tracking_number}
+                                  onChange={(e) =>
+                                    setTrackingForm({ ...trackingForm, tracking_number: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <div>
+                                <Label>Tracking URL</Label>
+                                <Input
+                                  type="url"
+                                  value={trackingForm.tracking_url}
+                                  onChange={(e) =>
+                                    setTrackingForm({ ...trackingForm, tracking_url: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <Button type="submit" className="w-full">
+                                Save & Mark as Shipped
+                              </Button>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Select
                         value={order.status}

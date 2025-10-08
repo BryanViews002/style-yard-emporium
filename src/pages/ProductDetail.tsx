@@ -9,6 +9,8 @@ import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
+import { ReviewWithVoting } from "@/components/ReviewWithVoting";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +25,7 @@ const ProductDetail = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", comment: "" });
+  const [productImages, setProductImages] = useState<string[]>([]);
 
   useEffect(() => {
     if (product) {
@@ -34,8 +37,24 @@ const ProductDetail = () => {
       }
       loadReviews();
       checkWishlist();
+      loadProductImages();
     }
   }, [product, user]);
+
+  const loadProductImages = async () => {
+    if (!id) return;
+    const { data } = await supabase
+      .from("product_images")
+      .select("image_url")
+      .eq("product_id", id)
+      .order("display_order");
+    
+    if (data && data.length > 0) {
+      setProductImages(data.map(img => img.image_url));
+    } else if (product) {
+      setProductImages([product.image]);
+    }
+  };
 
   const loadReviews = async () => {
     if (!id) return;
@@ -169,26 +188,10 @@ const ProductDetail = () => {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-6">
-            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
-              <img 
-                src={product.image} 
-                alt={product.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-            
-            {/* Thumbnail gallery placeholder for multiple images */}
-            <div className="grid grid-cols-4 gap-4">
-              {[...Array(4)].map((_, index) => (
-                <div key={index} className="aspect-square bg-muted/50 rounded border-2 border-transparent hover:border-accent cursor-pointer transition-colors">
-                  <img 
-                    src={product.image} 
-                    alt={`${product.name} view ${index + 1}`}
-                    className="w-full h-full object-cover rounded"
-                  />
-                </div>
-              ))}
-            </div>
+            <ProductImageGallery 
+              images={productImages.length > 0 ? productImages : [product.image]}
+              productName={product.name}
+            />
           </div>
 
           {/* Product Info */}
@@ -371,18 +374,11 @@ const ProductDetail = () => {
               <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
             ) : (
               reviews.map((review) => (
-                <div key={review.id} className="border-b pb-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`h-4 w-4 ${review.rating > i ? "fill-accent text-accent" : "text-muted"}`} />
-                    ))}
-                  </div>
-                  <h4 className="font-medium text-lg mb-2">{review.title}</h4>
-                  <p className="text-muted-foreground mb-2">{review.comment}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(review.created_at).toLocaleDateString()}
-                  </p>
-                </div>
+                <ReviewWithVoting 
+                  key={review.id} 
+                  review={review}
+                  onVote={loadReviews}
+                />
               ))
             )}
           </div>
