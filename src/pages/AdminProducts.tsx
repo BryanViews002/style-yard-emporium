@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Package } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import ImageUpload from "@/components/ImageUpload";
+import { ImageGalleryUploader } from "@/components/ImageGalleryUploader";
 
 interface Product {
   id: string;
@@ -40,6 +41,7 @@ const AdminProducts = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productImages, setProductImages] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -138,7 +140,7 @@ const AdminProducts = () => {
     setEditingProduct(null);
   };
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = async (product: Product) => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
@@ -155,6 +157,14 @@ const AdminProducts = () => {
       size_options: product.size_options?.join(", ") || "",
       color_options: product.color_options?.join(", ") || "",
     });
+    
+    const { data: images } = await supabase
+      .from('product_images')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('display_order');
+    
+    setProductImages(images || []);
     setIsDialogOpen(true);
   };
 
@@ -284,6 +294,24 @@ const AdminProducts = () => {
                   onImageUploaded={(url) => setFormData({ ...formData, image: url })}
                   onRemove={() => setFormData({ ...formData, image: "" })}
                 />
+                
+                {editingProduct && (
+                  <div className="space-y-2">
+                    <Label>Product Gallery</Label>
+                    <ImageGalleryUploader
+                      productId={editingProduct.id}
+                      images={productImages}
+                      onImagesChange={async () => {
+                        const { data } = await supabase
+                          .from('product_images')
+                          .select('*')
+                          .eq('product_id', editingProduct.id)
+                          .order('display_order');
+                        setProductImages(data || []);
+                      }}
+                    />
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="sku">SKU</Label>

@@ -29,6 +29,27 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
+      // Check rate limit
+      const rateLimitRes = await fetch(
+        'https://ngniknstgjpwgnyewpll.supabase.co/functions/v1/check-rate-limit',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ actionType: 'contact_form' }),
+        }
+      );
+
+      const rateLimitData = await rateLimitRes.json();
+      
+      if (!rateLimitData.allowed) {
+        toast({
+          title: "Too many requests",
+          description: "Please wait a few minutes before submitting again.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
       const response = await fetch(
         'https://ngniknstgjpwgnyewpll.supabase.co/functions/v1/handle-contact-form',
         {

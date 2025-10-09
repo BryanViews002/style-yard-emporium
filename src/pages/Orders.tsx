@@ -6,6 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { OrderTrackingCard } from "@/components/OrderTrackingCard";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface OrderItem {
   id: string;
@@ -32,6 +44,8 @@ const Orders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user) {
@@ -73,6 +87,34 @@ const Orders = () => {
     };
 
     return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast({ title: "Order cancelled successfully" });
+      loadOrders();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
+  const canCancelOrder = (order: Order) => {
+    const orderDate = new Date(order.created_at);
+    const hoursSinceOrder = (Date.now() - orderDate.getTime()) / (1000 * 60 * 60);
+    return order.status === 'pending' && hoursSinceOrder < 24;
   };
 
   if (loading) {
@@ -126,9 +168,21 @@ const Orders = () => {
                       </div>
                     ))}
                     
-                    <div className="border-t pt-4 flex justify-between items-center">
-                      <p className="font-semibold">Total</p>
-                      <p className="text-xl font-bold">${order.total_amount.toFixed(2)}</p>
+                    <div className="border-t pt-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <p className="font-semibold">Total</p>
+                        <p className="text-xl font-bold">${order.total_amount.toFixed(2)}</p>
+                      </div>
+                      {canCancelOrder(order) && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setCancellingOrderId(order.id)}
+                          className="w-full"
+                        >
+                          Cancel Order
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -137,6 +191,26 @@ const Orders = () => {
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!cancellingOrderId} onOpenChange={() => setCancellingOrderId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this order? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Order</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => cancellingOrderId && handleCancelOrder(cancellingOrderId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Cancel Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

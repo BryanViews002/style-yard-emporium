@@ -122,13 +122,14 @@ export const ReviewWithVoting = ({ review, onVote }: ReviewWithVotingProps) => {
 
       {/* Review Images */}
       {review.images && review.images.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex gap-2 overflow-x-auto mt-3">
           {review.images.map((image, index) => (
             <img
               key={index}
               src={image}
               alt={`Review image ${index + 1}`}
-              className="h-20 w-20 object-cover rounded"
+              className="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => window.open(image, '_blank')}
             />
           ))}
         </div>

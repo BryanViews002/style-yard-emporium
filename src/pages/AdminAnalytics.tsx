@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, TrendingUp, DollarSign, ShoppingCart, Users } from "lucide-react";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useToast } from "@/hooks/use-toast";
-import { DollarSign, Package, ShoppingCart, Users, TrendingUp } from "lucide-react";
 
 interface Stats {
   totalRevenue: number;
@@ -22,15 +23,12 @@ const AdminAnalytics = () => {
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState<Stats>({
-    totalRevenue: 0,
-    totalOrders: 0,
-    totalProducts: 0,
-    totalUsers: 0,
-    recentOrders: [],
-    topProducts: [],
-    lowStockProducts: [],
-  });
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [bestSellers, setBestSellers] = useState<any[]>([]);
 
   useEffect(() => {
     checkAdminStatus();
@@ -65,54 +63,41 @@ const AdminAnalytics = () => {
 
   const loadStats = async () => {
     try {
-      // Get total revenue and orders
-      const { data: orders } = await supabase
-        .from("orders")
-        .select("total_amount, status");
+      const { data: orders } = await supabase.from("orders").select("total_amount, created_at");
+      const totalRev = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
+      
+      const { count: ordersCount } = await supabase.from("orders").select("*", { count: "exact", head: true });
+      const { count: productsCount } = await supabase.from("products").select("*", { count: "exact", head: true });
+      const { count: usersCount } = await supabase.from("profiles").select("*", { count: "exact", head: true });
 
-      const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
-      const totalOrders = orders?.length || 0;
+      const { data: dailyRevenue } = await supabase.from("orders").select("created_at, total_amount")
+        .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).order("created_at");
 
-      // Get total products
-      const { count: productsCount } = await supabase
-        .from("products")
-        .select("*", { count: "exact", head: true });
+      const revenueByDay = (dailyRevenue || []).reduce((acc: any, order: any) => {
+        const date = new Date(order.created_at).toLocaleDateString();
+        acc[date] = (acc[date] || 0) + Number(order.total_amount);
+        return acc;
+      }, {});
 
-      // Get total users
-      const { count: usersCount } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true });
+      const chartData = Object.entries(revenueByDay).map(([date, revenue]) => ({ date, revenue }));
 
-      // Get recent orders
-      const { data: recentOrders } = await supabase
-        .from("orders")
-        .select("id, order_number, total_amount, status, created_at")
-        .order("created_at", { ascending: false })
-        .limit(5);
+      const { data: orderItems } = await supabase.from("order_items").select("product_id, quantity, product_snapshot");
+      const productSales = (orderItems || []).reduce((acc: any, item: any) => {
+        if (!acc[item.product_id]) acc[item.product_id] = { name: item.product_snapshot?.name || "Unknown", quantity: 0 };
+        acc[item.product_id].quantity += item.quantity;
+        return acc;
+      }, {});
 
-      // Get low stock products
-      const { data: lowStockProducts } = await supabase
-        .from("products")
-        .select("id, name, stock_quantity, image")
-        .lte("stock_quantity", 10)
-        .order("stock_quantity", { ascending: true })
-        .limit(5);
+      const bestSellersData = Object.values(productSales).sort((a: any, b: any) => b.quantity - a.quantity).slice(0, 5);
 
-      setStats({
-        totalRevenue,
-        totalOrders,
-        totalProducts: productsCount || 0,
-        totalUsers: usersCount || 0,
-        recentOrders: recentOrders || [],
-        topProducts: [],
-        lowStockProducts: lowStockProducts || [],
-      });
+      setTotalRevenue(totalRev);
+      setTotalOrders(ordersCount || 0);
+      setTotalProducts(productsCount || 0);
+      setTotalUsers(usersCount || 0);
+      setRevenueData(chartData);
+      setBestSellers(bestSellersData);
     } catch (error: any) {
-      toast({
-        title: "Error loading stats",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error loading stats:", error);
     } finally {
       setIsLoading(false);
     }
@@ -121,7 +106,7 @@ const AdminAnalytics = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -136,94 +121,85 @@ const AdminAnalytics = () => {
         <h1 className="text-4xl font-light tracking-wider text-primary mb-8">Sales Analytics</h1>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold text-primary">${stats.totalRevenue.toFixed(2)}</p>
-              </div>
-              <DollarSign className="h-10 w-10 text-accent" />
-            </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">All time revenue</p>
+            </CardContent>
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Orders</p>
-                <p className="text-2xl font-bold text-primary">{stats.totalOrders}</p>
-              </div>
-              <ShoppingCart className="h-10 w-10 text-accent" />
-            </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalOrders}</div>
+              <p className="text-xs text-muted-foreground">All time orders</p>
+            </CardContent>
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Products</p>
-                <p className="text-2xl font-bold text-primary">{stats.totalProducts}</p>
-              </div>
-              <Package className="h-10 w-10 text-accent" />
-            </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalProducts}</div>
+              <p className="text-xs text-muted-foreground">Active products</p>
+            </CardContent>
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Users</p>
-                <p className="text-2xl font-bold text-primary">{stats.totalUsers}</p>
-              </div>
-              <Users className="h-10 w-10 text-accent" />
-            </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalUsers}</div>
+              <p className="text-xs text-muted-foreground">Registered users</p>
+            </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Orders */}
-          <Card className="p-6">
-            <h2 className="text-xl font-medium mb-4 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-accent" />
-              Recent Orders
-            </h2>
-            <div className="space-y-4">
-              {stats.recentOrders.map((order) => (
-                <div key={order.id} className="flex justify-between items-center border-b pb-2">
-                  <div>
-                    <p className="font-medium">{order.order_number}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">${Number(order.total_amount).toFixed(2)}</p>
-                    <p className="text-sm capitalize">{order.status}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="grid gap-4 md:grid-cols-2 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue (Last 7 Days)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
           </Card>
 
-          {/* Low Stock Alert */}
-          <Card className="p-6">
-            <h2 className="text-xl font-medium mb-4 flex items-center gap-2">
-              <Package className="h-5 w-5 text-destructive" />
-              Low Stock Alert
-            </h2>
-            <div className="space-y-4">
-              {stats.lowStockProducts.length === 0 ? (
-                <p className="text-muted-foreground">All products have sufficient stock</p>
-              ) : (
-                stats.lowStockProducts.map((product) => (
-                  <div key={product.id} className="flex items-center gap-4 border-b pb-2">
-                    <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded" />
-                    <div className="flex-1">
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-destructive">Only {product.stock_quantity} left</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 5 Best Sellers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={bestSellers}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="quantity" fill="hsl(var(--primary))" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
           </Card>
         </div>
       </div>

@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CouponInput } from "@/components/CouponInput";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Checkout = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; id: string; discount: number } | undefined>();
 
   const [formData, setFormData] = useState({
     email: user?.email || "",
@@ -35,6 +37,22 @@ const Checkout = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const handleCouponApplied = (couponId: string, discountAmount: number) => {
+    setAppliedCoupon({
+      code: appliedCoupon?.code || "",
+      id: couponId,
+      discount: discountAmount,
+    });
+  };
+
+  const handleCouponRemoved = () => {
+    setAppliedCoupon(undefined);
+  };
+
+  const getSubtotal = () => getTotalPrice();
+  const getDiscount = () => appliedCoupon?.discount || 0;
+  const getFinalTotal = () => getSubtotal() - getDiscount();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,10 +98,12 @@ const Checkout = () => {
           user_id: user?.id || null,
           email: formData.email,
           order_number: orderNumber,
-          total_amount: getTotalPrice(),
-          subtotal: getTotalPrice(),
+          total_amount: getFinalTotal(),
+          subtotal: getSubtotal(),
           tax_amount: 0,
           shipping_amount: 0,
+          discount_amount: getDiscount(),
+          coupon_id: appliedCoupon?.id || null,
           status: "pending",
           shipping_address: {
             first_name: formData.firstName,
@@ -337,11 +357,26 @@ const Checkout = () => {
 
               <Separator className="my-4" />
 
+              <CouponInput
+                cartTotal={getSubtotal()}
+                onCouponApplied={handleCouponApplied}
+                onCouponRemoved={handleCouponRemoved}
+                appliedCoupon={appliedCoupon}
+              />
+
+              <Separator className="my-4" />
+
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${getTotalPrice().toFixed(2)}</span>
+                  <span>${getSubtotal().toFixed(2)}</span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-sm text-accent">
+                    <span>Discount</span>
+                    <span>-${getDiscount().toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
                   <span>Free</span>
@@ -353,7 +388,7 @@ const Checkout = () => {
                 <Separator className="my-2" />
                 <div className="flex justify-between text-lg font-medium">
                   <span>Total</span>
-                  <span>${getTotalPrice().toFixed(2)}</span>
+                  <span>${getFinalTotal().toFixed(2)}</span>
                 </div>
               </div>
             </Card>

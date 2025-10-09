@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
 import { ReviewWithVoting } from "@/components/ReviewWithVoting";
+import { ReviewImageUpload } from "@/components/ReviewImageUpload";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +25,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [reviews, setReviews] = useState<any[]>([]);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", comment: "" });
+  const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", comment: "", images: [] as string[] });
   const [productImages, setProductImages] = useState<string[]>([]);
 
   useEffect(() => {
@@ -109,12 +110,13 @@ const ProductDetail = () => {
         rating: reviewForm.rating,
         title: reviewForm.title,
         comment: reviewForm.comment,
+        images: reviewForm.images,
       });
 
       if (error) throw error;
 
       toast({ title: "Review submitted successfully" });
-      setReviewForm({ rating: 5, title: "", comment: "" });
+      setReviewForm({ rating: 5, title: "", comment: "", images: [] });
       loadReviews();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -361,6 +363,13 @@ const ProductDetail = () => {
                     rows={4}
                     value={reviewForm.comment}
                     onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Images (Optional)</label>
+                  <ReviewImageUpload
+                    images={reviewForm.images}
+                    onImagesChange={(images) => setReviewForm({ ...reviewForm, images })}
                   />
                 </div>
                 <Button type="submit" className="btn-hero">Submit Review</Button>

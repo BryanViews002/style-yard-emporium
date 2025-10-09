@@ -332,6 +332,24 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            <Card 
+              className="border-border/50 shadow-lg hover:shadow-xl transition-all cursor-pointer group"
+              onClick={() => navigate("/admin/bundles")}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Package className="h-8 w-8 text-accent" />
+                    <div>
+                      <h3 className="font-medium text-primary">Product Bundles</h3>
+                      <p className="text-sm text-muted-foreground">Create bundles</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 

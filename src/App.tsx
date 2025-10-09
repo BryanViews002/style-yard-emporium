@@ -24,6 +24,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminCategories from "./pages/AdminCategories";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminCoupons from "./pages/AdminCoupons";
+import AdminBundles from "./pages/AdminBundles";
 import Orders from "./pages/Orders";
 import Wishlist from "./pages/Wishlist";
 import Profile from "./pages/Profile";
@@ -83,6 +84,7 @@ const AppContent = () => {
         <Route path="/admin/categories" element={<ProtectedRoute requireAdmin><AdminCategories /></ProtectedRoute>} />
         <Route path="/admin/analytics" element={<ProtectedRoute requireAdmin><AdminAnalytics /></ProtectedRoute>} />
         <Route path="/admin/coupons" element={<ProtectedRoute requireAdmin><AdminCoupons /></ProtectedRoute>} />
+        <Route path="/admin/bundles" element={<ProtectedRoute requireAdmin><AdminBundles /></ProtectedRoute>} />
         
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
