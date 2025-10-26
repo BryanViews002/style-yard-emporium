@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Heart, ShoppingBag, Star } from "lucide-react";
 import { useProduct } from "@/hooks/useProducts";
@@ -9,9 +15,9 @@ import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import WishlistButton from "@/components/WishlistButton";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
-import { ReviewWithVoting } from "@/components/ReviewWithVoting";
-import { ReviewImageUpload } from "@/components/ReviewImageUpload";
+import ProductReview from "@/components/ProductReview";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,14 +25,12 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { data: product, isLoading } = useProduct(id || "");
-  
+
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", comment: "", images: [] as string[] });
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
 
   useEffect(() => {
     if (product) {
@@ -36,90 +40,41 @@ const ProductDetail = () => {
       if (product.colors && product.colors.length > 0) {
         setSelectedColor(product.colors[0]);
       }
-      loadReviews();
-      checkWishlist();
-      loadProductImages();
     }
-  }, [product, user]);
+  }, [product]);
+
+  useEffect(() => {
+    if (product?.id) {
+      loadProductImages();
+      loadReviews();
+    }
+  }, [product?.id]);
 
   const loadProductImages = async () => {
-    if (!id) return;
+    if (!product?.id) return;
+
     const { data } = await supabase
       .from("product_images")
       .select("image_url")
-      .eq("product_id", id)
+      .eq("product_id", product.id)
       .order("display_order");
-    
-    if (data && data.length > 0) {
-      setProductImages(data.map(img => img.image_url));
-    } else if (product) {
-      setProductImages([product.image]);
+
+    if (data) {
+      setProductImages(data.map((img) => img.image_url));
     }
   };
 
   const loadReviews = async () => {
-    if (!id) return;
+    if (!product?.id) return;
+
     const { data } = await supabase
       .from("product_reviews")
       .select("*")
-      .eq("product_id", id)
+      .eq("product_id", product.id)
       .order("created_at", { ascending: false });
-    
-    setReviews(data || []);
-  };
 
-  const checkWishlist = async () => {
-    if (!user || !id) return;
-    const { data } = await supabase
-      .from("wishlists")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("product_id", id)
-      .maybeSingle();
-    
-    setIsFavorite(!!data);
-  };
-
-  const toggleWishlist = async () => {
-    if (!user) {
-      toast({ title: "Please log in to add to wishlist", variant: "destructive" });
-      return;
-    }
-
-    if (isFavorite) {
-      await supabase.from("wishlists").delete().eq("user_id", user.id).eq("product_id", id);
-      toast({ title: "Removed from wishlist" });
-    } else {
-      await supabase.from("wishlists").insert({ user_id: user.id, product_id: id });
-      toast({ title: "Added to wishlist" });
-    }
-    setIsFavorite(!isFavorite);
-  };
-
-  const submitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      toast({ title: "Please log in to leave a review", variant: "destructive" });
-      return;
-    }
-
-    try {
-      const { error } = await supabase.from("product_reviews").insert({
-        product_id: id,
-        user_id: user.id,
-        rating: reviewForm.rating,
-        title: reviewForm.title,
-        comment: reviewForm.comment,
-        images: reviewForm.images,
-      });
-
-      if (error) throw error;
-
-      toast({ title: "Review submitted successfully" });
-      setReviewForm({ rating: 5, title: "", comment: "", images: [] });
-      loadReviews();
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (data) {
+      setReviews(data);
     }
   };
 
@@ -132,7 +87,10 @@ const ProductDetail = () => {
               <div className="aspect-square bg-muted animate-pulse rounded-lg" />
               <div className="grid grid-cols-4 gap-4">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="aspect-square bg-muted animate-pulse rounded" />
+                  <div
+                    key={i}
+                    className="aspect-square bg-muted animate-pulse rounded"
+                  />
                 ))}
               </div>
             </div>
@@ -180,7 +138,10 @@ const ProductDetail = () => {
         {/* Back Button */}
         <div className="mb-8">
           <Link to="/shop">
-            <Button variant="ghost" className="text-muted-foreground hover:text-primary">
+            <Button
+              variant="ghost"
+              className="text-muted-foreground hover:text-primary"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Shop
             </Button>
@@ -190,8 +151,10 @@ const ProductDetail = () => {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-6">
-            <ProductImageGallery 
-              images={productImages.length > 0 ? productImages : [product.image]}
+            <ProductImageGallery
+              images={
+                productImages.length > 0 ? productImages : [product.image]
+              }
               productName={product.name}
             />
           </div>
@@ -211,9 +174,21 @@ const ProductDetail = () => {
                 </span>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`h-4 w-4 ${reviews.length > 0 && (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) > i ? "fill-accent text-accent" : "text-muted"}`} />
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${
+                        reviews.length > 0 &&
+                        reviews.reduce((sum, r) => sum + r.rating, 0) /
+                          reviews.length >
+                          i
+                          ? "fill-accent text-accent"
+                          : "text-muted"
+                      }`}
+                    />
                   ))}
-                  <span className="text-muted-foreground text-sm ml-2">({reviews.length} reviews)</span>
+                  <span className="text-muted-foreground text-sm ml-2">
+                    ({reviews.length} reviews)
+                  </span>
                 </div>
               </div>
               <p className="text-muted-foreground leading-relaxed text-lg">
@@ -256,10 +231,13 @@ const ProductDetail = () => {
                         key={color}
                         onClick={() => setSelectedColor(color)}
                         className={`w-8 h-8 rounded-full border-2 transition-colors ${
-                          selectedColor === color ? "border-accent" : "border-border"
+                          selectedColor === color
+                            ? "border-accent"
+                            : "border-border"
                         }`}
                         style={{ backgroundColor: color }}
                         title={color}
+                        aria-label={`Select color ${color}`}
                       />
                     ))}
                   </div>
@@ -271,7 +249,10 @@ const ProductDetail = () => {
                 <label className="text-sm font-medium text-primary mb-3 block">
                   Quantity
                 </label>
-                <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
+                <Select
+                  value={quantity.toString()}
+                  onValueChange={(value) => setQuantity(parseInt(value))}
+                >
                   <SelectTrigger className="w-24">
                     <SelectValue />
                   </SelectTrigger>
@@ -288,8 +269,8 @@ const ProductDetail = () => {
 
             {/* Action Buttons */}
             <div className="space-y-4">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="w-full btn-hero"
                 onClick={handleAddToCart}
                 disabled={product.inStock === false}
@@ -297,21 +278,21 @@ const ProductDetail = () => {
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 {product.inStock === false ? "Out of Stock" : "Add to Cart"}
               </Button>
-              
-              <Button 
-                variant="outline" 
-                size="lg" 
+
+              <WishlistButton
+                productId={product.id}
+                productName={product.name}
+                variant="outline"
+                size="lg"
                 className="w-full"
-                onClick={toggleWishlist}
-              >
-                <Heart className={`mr-2 h-5 w-5 ${isFavorite ? "fill-current text-accent" : ""}`} />
-                {isFavorite ? "Remove from Wishlist" : "Add to Wishlist"}
-              </Button>
+              />
             </div>
 
             {/* Product Features */}
             <div className="border-t border-border/50 pt-8">
-              <h3 className="text-lg font-medium text-primary mb-4">Features</h3>
+              <h3 className="text-lg font-medium text-primary mb-4">
+                Features
+              </h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>• Premium quality materials</li>
                 <li>• Ethically sourced and manufactured</li>
@@ -325,72 +306,7 @@ const ProductDetail = () => {
 
         {/* Reviews Section */}
         <div className="mt-16">
-          <h2 className="text-3xl font-light tracking-wider text-primary mb-8">Customer Reviews</h2>
-          
-          {/* Review Form */}
-          {user && (
-            <div className="mb-8 p-6 border rounded-lg">
-              <h3 className="text-xl font-medium mb-4">Write a Review</h3>
-              <form onSubmit={submitReview} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Rating</label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        key={rating}
-                        type="button"
-                        onClick={() => setReviewForm({ ...reviewForm, rating })}
-                      >
-                        <Star className={`h-6 w-6 ${reviewForm.rating >= rating ? "fill-accent text-accent" : "text-muted"}`} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Title</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border rounded"
-                    value={reviewForm.title}
-                    onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Review</label>
-                  <Textarea
-                    required
-                    rows={4}
-                    value={reviewForm.comment}
-                    onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Images (Optional)</label>
-                  <ReviewImageUpload
-                    images={reviewForm.images}
-                    onImagesChange={(images) => setReviewForm({ ...reviewForm, images })}
-                  />
-                </div>
-                <Button type="submit" className="btn-hero">Submit Review</Button>
-              </form>
-            </div>
-          )}
-
-          {/* Reviews List */}
-          <div className="space-y-6">
-            {reviews.length === 0 ? (
-              <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
-            ) : (
-              reviews.map((review) => (
-                <ReviewWithVoting 
-                  key={review.id} 
-                  review={review}
-                  onVote={loadReviews}
-                />
-              ))
-            )}
-          </div>
+          <ProductReview productId={product.id} productName={product.name} />
         </div>
       </div>
     </div>

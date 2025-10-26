@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 export interface Product {
   id: string;
@@ -19,9 +20,22 @@ export interface Product {
   brand?: string;
   size_options?: string[];
   color_options?: string[];
+  created_at?: string;
 }
 
 export const useProducts = () => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const handleProductsUpdate = () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    };
+
+    window.addEventListener("productsUpdated", handleProductsUpdate);
+    return () =>
+      window.removeEventListener("productsUpdated", handleProductsUpdate);
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -29,7 +43,7 @@ export const useProducts = () => {
         .from("products")
         .select("*")
         .eq("is_active", true)
-        .order("name");
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
@@ -38,7 +52,8 @@ export const useProducts = () => {
         name: product.name,
         price: parseFloat(product.price),
         image: product.image,
-        category: product.slug || product.name.toLowerCase().replace(/\s+/g, "-"),
+        category:
+          product.slug || product.name.toLowerCase().replace(/\s+/g, "-"),
         description: product.description,
         sizes: product.size_options || [],
         colors: product.color_options || [],
@@ -49,8 +64,11 @@ export const useProducts = () => {
         category_id: product.category_id,
         sku: product.sku,
         brand: product.brand,
+        created_at: product.created_at,
       })) as Product[];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -59,7 +77,7 @@ export const useProduct = (id?: string) => {
     queryKey: ["product", id],
     queryFn: async () => {
       if (!id) return null;
-      
+
       const { data, error } = await supabase
         .from("products")
         .select("*")

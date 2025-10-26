@@ -1,106 +1,184 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Package, Truck, CheckCircle, ExternalLink } from "lucide-react";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ExternalLink, Package, Truck, CheckCircle, Clock, XCircle } from 'lucide-react';
+import ShippingTracking from './ShippingTracking';
+
+
 
 interface OrderTrackingCardProps {
-  orderNumber: string;
-  status: string;
-  trackingNumber?: string;
-  trackingUrl?: string;
-  createdAt: string;
+  order: {
+    id: string;
+    order_number: string;
+    status: string;
+    created_at: string;
+    total_amount: number;
+    tracking_number?: string;
+    tracking_url?: string;
+    order_items: Array<{
+      product_snapshot: {
+        name: string;
+        image: string;
+        selectedSize?: string;
+        selectedColor?: string;
+      };
+      quantity: number;
+      total_price: number;
+    }>;
+  };
 }
 
-export const OrderTrackingCard = ({
-  orderNumber,
-  status,
-  trackingNumber,
-  trackingUrl,
-  createdAt,
-}: OrderTrackingCardProps) => {
-  const getStatusIcon = () => {
+const OrderTrackingCard: React.FC<OrderTrackingCardProps> = ({ order }) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case "pending":
-      case "processing":
-        return <Package className="h-5 w-5" />;
-      case "shipped":
-        return <Truck className="h-5 w-5" />;
-      case "delivered":
-        return <CheckCircle className="h-5 w-5" />;
+      case 'pending':
+        return <Clock className="h-5 w-5 text-yellow-500" />;
+      case 'processing':
+        return <Package className="h-5 w-5 text-blue-500" />;
+      case 'shipped':
+        return <Truck className="h-5 w-5 text-green-500" />;
+      case 'delivered':
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case 'cancelled':
+        return <XCircle className="h-5 w-5 text-red-500" />;
       default:
-        return <Package className="h-5 w-5" />;
+        return <Clock className="h-5 w-5 text-gray-500" />;
     }
   };
 
-  const getStatusSteps = () => {
-    const steps = [
-      { label: "Order Placed", status: "pending", completed: true },
-      { label: "Processing", status: "processing", completed: ["processing", "shipped", "delivered"].includes(status) },
-      { label: "Shipped", status: "shipped", completed: ["shipped", "delivered"].includes(status) },
-      { label: "Delivered", status: "delivered", completed: status === "delivered" },
-    ];
-    return steps;
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'secondary';
+      case 'processing':
+        return 'default';
+      case 'shipped':
+        return 'outline';
+      case 'delivered':
+        return 'default';
+      case 'cancelled':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Your order is being reviewed and will be processed soon.';
+      case 'processing':
+        return 'Your order is being prepared for shipment.';
+      case 'shipped':
+        return 'Your order has been shipped and is on its way!';
+      case 'delivered':
+        return 'Your order has been successfully delivered.';
+      case 'cancelled':
+        return 'Your order has been cancelled.';
+      default:
+        return 'Order status update available.';
+    }
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            {getStatusIcon()}
-            Order {orderNumber}
-          </CardTitle>
-          <Badge variant={status === "delivered" ? "default" : "secondary"}>
-            {status}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Placed on {new Date(createdAt).toLocaleDateString()}
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Progress Steps */}
-        <div className="relative">
-          <div className="flex justify-between">
-            {getStatusSteps().map((step, index) => (
-              <div key={step.status} className="flex flex-col items-center flex-1">
-                <div
-                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                    step.completed
-                      ? "bg-accent border-accent text-accent-foreground"
-                      : "bg-background border-muted-foreground/30"
-                  }`}
-                >
-                  {step.completed && <CheckCircle className="h-4 w-4" />}
-                </div>
-                <p className="text-xs mt-2 text-center">{step.label}</p>
-              </div>
-            ))}
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">Order #{order.order_number}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Placed on {new Date(order.created_at).toLocaleDateString()}
+            </p>
           </div>
-          <div className="absolute top-4 left-0 right-0 h-0.5 bg-muted-foreground/20 -z-10" />
+          <div className="flex items-center gap-2">
+            {getStatusIcon(order.status)}
+            <Badge variant={getStatusBadgeVariant(order.status)}>
+              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+            </Badge>
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {/* Status Message */}
+        <div className="p-3 bg-muted/50 rounded-lg">
+          <p className="text-sm">{getStatusMessage(order.status)}</p>
         </div>
 
         {/* Tracking Information */}
-        {trackingNumber && (
-          <div className="border-t pt-4">
-            <h4 className="font-medium mb-2">Tracking Information</h4>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Tracking Number</p>
-                <p className="font-mono">{trackingNumber}</p>
+        {order.tracking_number && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">Tracking Information</h4>
+            <p className="text-sm text-blue-800 mb-2">
+              <strong>Tracking Number:</strong> {order.tracking_number}
+            </p>
+            {order.tracking_url && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.open(order.tracking_url, '_blank')}
+                className="text-blue-600 border-blue-300 hover:bg-blue-100"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Track Package
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Order Items */}
+        <div>
+          <h4 className="font-medium mb-3">Order Items</h4>
+          <div className="space-y-3">
+            {order.order_items.map((item, index) => (
+              <div key={index} className="flex gap-3 p-3 border rounded-lg">
+                <img
+                  src={item.product_snapshot.image}
+                  alt={item.product_snapshot.name}
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div className="flex-1">
+                  <h5 className="font-medium">{item.product_snapshot.name}</h5>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>Quantity: {item.quantity}</p>
+                    {item.product_snapshot.selectedSize && (
+                      <p>Size: {item.product_snapshot.selectedSize}</p>
+                    )}
+                    {item.product_snapshot.selectedColor && (
+                      <p>Color: {item.product_snapshot.selectedColor}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">${item.total_price.toFixed(2)}</p>
+                </div>
               </div>
-              {trackingUrl && (
-                <Button variant="outline" size="sm" asChild>
-                  <a href={trackingUrl} target="_blank" rel="noopener noreferrer">
-                    Track Package
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-            </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Order Total */}
+        <div className="pt-3 border-t">
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-medium">Total</span>
+            <span className="text-lg font-bold">${order.total_amount.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Shipping Tracking */}
+        {(order.tracking_number || order.status === 'shipped' || order.status === 'delivered') && (
+          <div className="mt-6">
+            <ShippingTracking
+              orderId={order.id}
+              trackingNumber={order.tracking_number}
+              trackingUrl={order.tracking_url}
+            />
           </div>
         )}
       </CardContent>
     </Card>
   );
 };
+
+export default OrderTrackingCard;

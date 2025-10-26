@@ -4,9 +4,15 @@ import ProductCard from "@/components/ProductCard";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Filter, X, Search } from "lucide-react";
+import { Filter, X, Search, RefreshCw } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,8 +20,8 @@ import { supabase } from "@/integrations/supabase/client";
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { addToCart } = useCart();
-  const { data: products = [], isLoading } = useProducts();
-  
+  const { data: products = [], isLoading, refetch } = useProducts();
+
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,7 +29,7 @@ const Shop = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<string>("featured");
   const productsPerPage = 9;
-  
+
   const [filters, setFilters] = useState({
     category: searchParams.get("category") || "all",
     priceRange: [0, 500],
@@ -50,26 +56,31 @@ const Shop = () => {
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(product =>
-        product.name.toLowerCase().includes(query) ||
-        product.description?.toLowerCase().includes(query) ||
-        product.category?.toLowerCase().includes(query)
+      result = result.filter(
+        (product) =>
+          product.name.toLowerCase().includes(query) ||
+          product.description?.toLowerCase().includes(query) ||
+          product.category?.toLowerCase().includes(query)
       );
     }
 
     // Filter by category ID
     if (filters.category !== "all") {
-      result = result.filter(product => product.category_id === filters.category);
+      result = result.filter(
+        (product) => product.category_id === filters.category
+      );
     }
 
     // Filter by price range
-    result = result.filter(product => 
-      product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
+    result = result.filter(
+      (product) =>
+        product.price >= filters.priceRange[0] &&
+        product.price <= filters.priceRange[1]
     );
 
     // Filter by stock
     if (filters.inStock) {
-      result = result.filter(product => product.stock_quantity > 0);
+      result = result.filter((product) => product.stock_quantity > 0);
     }
 
     // Sort products
@@ -80,7 +91,10 @@ const Shop = () => {
         case "price-high":
           return b.price - a.price;
         case "newest":
-          return new Date((b as any).created_at || 0).getTime() - new Date((a as any).created_at || 0).getTime();
+          return (
+            new Date((b as any).created_at || 0).getTime() -
+            new Date((a as any).created_at || 0).getTime()
+          );
         case "featured":
         default:
           return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
@@ -92,8 +106,8 @@ const Shop = () => {
   }, [filters, products, searchQuery]);
 
   const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    
+    setFilters((prev) => ({ ...prev, [key]: value }));
+
     // Update URL params for category
     if (key === "category") {
       if (value === "all") {
@@ -119,7 +133,10 @@ const Shop = () => {
   // Pagination
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
@@ -184,7 +201,9 @@ const Shop = () => {
           </div>
 
           {/* Filters Panel */}
-          <div className={`lg:w-64 space-y-6 ${showFilters || "hidden lg:block"}`}>
+          <div
+            className={`lg:w-64 space-y-6 ${showFilters || "hidden lg:block"}`}
+          >
             <div className="bg-card p-6 rounded-lg border border-border/50">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-light">Filters</h3>
@@ -193,11 +212,18 @@ const Shop = () => {
                   Clear
                 </Button>
               </div>
-              
+
               {/* Category Filter */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-muted-foreground">Category</label>
-                <Select value={filters.category} onValueChange={(value) => handleFilterChange("category", value)}>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Category
+                </label>
+                <Select
+                  value={filters.category}
+                  onValueChange={(value) =>
+                    handleFilterChange("category", value)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -215,11 +241,14 @@ const Shop = () => {
               {/* Price Range */}
               <div className="space-y-3">
                 <label className="text-sm font-medium text-muted-foreground">
-                  Price Range: ${filters.priceRange[0]} - ${filters.priceRange[1]}
+                  Price Range: ${filters.priceRange[0]} - $
+                  {filters.priceRange[1]}
                 </label>
                 <Slider
                   value={filters.priceRange}
-                  onValueChange={(value) => handleFilterChange("priceRange", value)}
+                  onValueChange={(value) =>
+                    handleFilterChange("priceRange", value)
+                  }
                   max={500}
                   min={0}
                   step={10}
@@ -233,10 +262,14 @@ const Shop = () => {
                   <input
                     type="checkbox"
                     checked={filters.inStock}
-                    onChange={(e) => handleFilterChange("inStock", e.target.checked)}
+                    onChange={(e) =>
+                      handleFilterChange("inStock", e.target.checked)
+                    }
                     className="rounded border-border"
                   />
-                  <span className="text-sm font-medium text-muted-foreground">In Stock Only</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    In Stock Only
+                  </span>
                 </label>
               </div>
             </div>
@@ -246,9 +279,23 @@ const Shop = () => {
           <div className="flex-1">
             {/* Sort and Results Count */}
             <div className="flex justify-between items-center mb-6">
-              <span className="text-muted-foreground">
-                {filteredProducts.length} products
-              </span>
+              <div className="flex items-center gap-4">
+                <span className="text-muted-foreground">
+                  {filteredProducts.length} products
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                  />
+                  Refresh
+                </Button>
+              </div>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
@@ -266,10 +313,7 @@ const Shop = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
               {currentProducts.map((product) => (
                 <div key={product.id} className="animate-fade-in">
-                  <ProductCard 
-                    product={product}
-                    onAddToCart={addToCart}
-                  />
+                  <ProductCard product={product} onAddToCart={addToCart} />
                 </div>
               ))}
             </div>

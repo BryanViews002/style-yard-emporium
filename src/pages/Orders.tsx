@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-import { OrderTrackingCard } from "@/components/OrderTrackingCard";
+import OrderTrackingCard from "@/components/OrderTrackingCard";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -44,7 +44,9 @@ const Orders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(
+    null
+  );
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,10 +63,12 @@ const Orders = () => {
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select(`
+        .select(
+          `
           *,
           order_items (*)
-        `)
+        `
+        )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -78,7 +82,10 @@ const Orders = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
       pending: "secondary",
       processing: "default",
       shipped: "outline",
@@ -92,9 +99,9 @@ const Orders = () => {
   const handleCancelOrder = async (orderId: string) => {
     try {
       const { error } = await supabase
-        .from('orders')
-        .update({ status: 'cancelled' })
-        .eq('id', orderId);
+        .from("orders")
+        .update({ status: "cancelled" })
+        .eq("id", orderId);
 
       if (error) throw error;
 
@@ -113,8 +120,9 @@ const Orders = () => {
 
   const canCancelOrder = (order: Order) => {
     const orderDate = new Date(order.created_at);
-    const hoursSinceOrder = (Date.now() - orderDate.getTime()) / (1000 * 60 * 60);
-    return order.status === 'pending' && hoursSinceOrder < 24;
+    const hoursSinceOrder =
+      (Date.now() - orderDate.getTime()) / (1000 * 60 * 60);
+    return order.status === "pending" && hoursSinceOrder < 24;
   };
 
   if (loading) {
@@ -128,7 +136,7 @@ const Orders = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">My Orders</h1>
-      
+
       {orders.length === 0 ? (
         <Card>
           <CardContent className="py-8">
@@ -141,69 +149,44 @@ const Orders = () => {
         <div className="space-y-6">
           {orders.map((order) => (
             <div key={order.id}>
-              <OrderTrackingCard
-                orderNumber={order.order_number}
-                status={order.status}
-                trackingNumber={order.tracking_number}
-                trackingUrl={order.tracking_url}
-                createdAt={order.created_at}
-              />
-              <Card className="mt-4">
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    {order.order_items?.map((item) => (
-                      <div key={item.id} className="flex gap-4">
-                        <img
-                          src={item.product_snapshot.image}
-                          alt={item.product_snapshot.name}
-                          className="w-20 h-20 object-cover rounded"
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium">{item.product_snapshot.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Quantity: {item.quantity} × ${item.unit_price.toFixed(2)}
-                          </p>
-                        </div>
-                        <p className="font-medium">${item.total_price.toFixed(2)}</p>
-                      </div>
-                    ))}
-                    
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between items-center mb-4">
-                        <p className="font-semibold">Total</p>
-                        <p className="text-xl font-bold">${order.total_amount.toFixed(2)}</p>
-                      </div>
-                      {canCancelOrder(order) && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setCancellingOrderId(order.id)}
-                          className="w-full"
-                        >
-                          Cancel Order
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <OrderTrackingCard order={order} />
+
+              {/* Cancel Order Button */}
+              {canCancelOrder(order) && (
+                <div className="mt-4">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setCancellingOrderId(order.id)}
+                    className="w-full"
+                  >
+                    Cancel Order
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      <AlertDialog open={!!cancellingOrderId} onOpenChange={() => setCancellingOrderId(null)}>
+      <AlertDialog
+        open={!!cancellingOrderId}
+        onOpenChange={() => setCancellingOrderId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel Order?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to cancel this order? This action cannot be undone.
+              Are you sure you want to cancel this order? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep Order</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => cancellingOrderId && handleCancelOrder(cancellingOrderId)}
+              onClick={() =>
+                cancellingOrderId && handleCancelOrder(cancellingOrderId)
+              }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Cancel Order

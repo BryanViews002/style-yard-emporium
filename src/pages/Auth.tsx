@@ -120,8 +120,30 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
+      // First, send the password reset email using our custom function
+      const resetUrl = `${window.location.origin}/auth?reset=true`;
+      
+      const emailResponse = await fetch(
+        'https://ngniknstgjpwgnyewpll.supabase.co/functions/v1/send-password-reset',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: resetEmail,
+            resetUrl: resetUrl,
+          }),
+        }
+      );
+
+      if (!emailResponse.ok) {
+        throw new Error('Failed to send password reset email');
+      }
+
+      // Then use Supabase's built-in password reset
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: resetUrl,
       });
 
       if (error) throw error;

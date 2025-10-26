@@ -1,151 +1,183 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Trash2, ShoppingBag } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "@/context/CartContext";
-
-interface WishlistItem {
-  id: string;
-  product_id: string;
-  products: {
-    id: string;
-    name: string;
-    price: number;
-    image: string;
-    stock_quantity: number;
-  };
-}
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useWishlist } from '@/context/WishlistContext';
+import { Heart, ShoppingBag, Trash2, Loader2 } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Wishlist = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const { wishlist, isLoading, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const navigate = useNavigate();
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    loadWishlist();
-  }, [user]);
-
-  const loadWishlist = async () => {
-    if (!user) return;
-
+  const handleAddToCart = async (productId: string, productName: string) => {
     try {
-      const { data, error } = await supabase
-        .from("wishlists")
-        .select("id, product_id, products(id, name, price, image, stock_quantity)")
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      setWishlist(data || []);
-    } catch (error: any) {
+      await addToCart(productId, 1);
       toast({
-        title: "Error loading wishlist",
-        description: error.message,
-        variant: "destructive",
+        title: "Added to Cart",
+        description: `${productName} has been added to your cart.`,
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const removeFromWishlist = async (wishlistId: string) => {
-    try {
-      const { error } = await supabase.from("wishlists").delete().eq("id", wishlistId);
-
-      if (error) throw error;
-
-      toast({ title: "Removed from wishlist" });
-      loadWishlist();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to add item to cart.",
         variant: "destructive",
       });
     }
   };
 
-  const handleAddToCart = (product: any) => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      category: "",
-      inStock: product.stock_quantity > 0,
-    }, 1);
+  const handleClearWishlist = async () => {
+    if (wishlist.length === 0) return;
     
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+    if (window.confirm('Are you sure you want to clear your entire wishlist?')) {
+      await clearWishlist();
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading wishlist...</p>
+      <div className="min-h-screen py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading your wishlist...</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-16">
+    <div className="min-h-screen py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-light tracking-wider text-primary mb-8">My Wishlist</h1>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-light tracking-wider text-primary">My Wishlist</h1>
+            <p className="text-muted-foreground mt-2">
+              {wishlist.length} item{wishlist.length !== 1 ? 's' : ''} in your wishlist
+            </p>
+          </div>
+          
+          {wishlist.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={handleClearWishlist}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear All
+            </Button>
+          )}
+        </div>
 
         {wishlist.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground mb-6">Your wishlist is empty</p>
-            <Link to="/shop">
-              <Button className="btn-hero">Continue Shopping</Button>
-            </Link>
-          </div>
+          <Card>
+            <CardContent className="py-16 text-center">
+              <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-medium mb-2">Your wishlist is empty</h3>
+              <p className="text-muted-foreground mb-6">
+                Start adding items you love to your wishlist
+              </p>
+              <Button asChild>
+                <Link to="/products">Browse Products</Link>
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {wishlist.map((item) => (
-              <div key={item.id} className="border rounded-lg p-4 space-y-4">
-                <Link to={`/product/${item.products.id}`}>
-                  <img
-                    src={item.products.image}
-                    alt={item.products.name}
-                    className="w-full h-64 object-cover rounded"
-                  />
-                </Link>
-                <div>
-                  <Link to={`/product/${item.products.id}`}>
-                    <h3 className="font-medium text-lg hover:text-accent">{item.products.name}</h3>
+              <Card key={item.id} className="group hover:shadow-lg transition-shadow">
+                <div className="relative">
+                  <Link to={`/products/${item.product_slug}`}>
+                    <img
+                      src={item.product_image}
+                      alt={item.product_name}
+                      className="w-full h-64 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
+                    />
                   </Link>
-                  <p className="text-xl font-light text-primary mt-2">${item.products.price}</p>
+                  
+                  {/* Wishlist indicator */}
+                  <div className="absolute top-3 right-3">
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
+                      <Heart className="h-4 w-4 text-accent fill-current" />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    className="flex-1 btn-hero"
-                    onClick={() => handleAddToCart(item.products)}
-                    disabled={item.products.stock_quantity === 0}
-                  >
-                    <ShoppingBag className="mr-2 h-4 w-4" />
-                    Add to Cart
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => removeFromWishlist(item.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="font-medium text-lg line-clamp-2 mb-1">
+                        <Link 
+                          to={`/products/${item.product_slug}`}
+                          className="hover:text-primary transition-colors"
+                        >
+                          {item.product_name}
+                        </Link>
+                      </h3>
+                      {item.product_brand && (
+                        <Badge variant="secondary" className="text-xs">
+                          {item.product_brand}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold text-primary">
+                        ${item.product_price.toFixed(2)}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        Added {new Date(item.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleAddToCart(item.product_id, item.product_name)}
+                      >
+                        <ShoppingBag className="h-4 w-4 mr-2" />
+                        Add to Cart
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="flex-1"
+                      >
+                        <Link to={`/products/${item.product_slug}`}>
+                          View Details
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
+          </div>
+        )}
+
+        {/* Quick Actions */}
+        {wishlist.length > 0 && (
+          <div className="mt-12 text-center">
+            <p className="text-muted-foreground mb-4">
+              Love what you see? Continue shopping for more items
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Button variant="outline" asChild>
+                <Link to="/products">Browse All Products</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/products?featured=true">Featured Items</Link>
+              </Button>
+            </div>
           </div>
         )}
       </div>

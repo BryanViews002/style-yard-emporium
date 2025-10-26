@@ -11,7 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
+import ShippingCalculator from "@/components/ShippingCalculator";
 import { CouponInput } from "@/components/CouponInput";
+import StripePaymentForm from "@/components/StripePaymentForm";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -19,7 +21,12 @@ const Checkout = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; id: string; discount: number } | undefined>();
+  const [appliedCoupon, setAppliedCoupon] = useState<
+    { code: string; id: string; discount: number } | undefined
+  >();
+  const [currentOrder, setCurrentOrder] = useState<any>(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [selectedShipping, setSelectedShipping] = useState<any>(null);
 
   const [formData, setFormData] = useState({
     email: user?.email || "",
@@ -35,7 +42,21 @@ const Checkout = () => {
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const newFormData = { ...formData, [e.target.name]: e.target.value };
+    setFormData(newFormData);
+
+    // Check if form is valid
+    const isValid = !!(
+      newFormData.email &&
+      newFormData.firstName &&
+      newFormData.lastName &&
+      newFormData.address1 &&
+      newFormData.city &&
+      newFormData.state &&
+      newFormData.postalCode &&
+      newFormData.phone
+    );
+    setIsFormValid(isValid);
   };
 
   const handleCouponApplied = (couponId: string, discountAmount: number) => {
@@ -52,71 +73,94 @@ const Checkout = () => {
 
   const getSubtotal = () => getTotalPrice();
   const getDiscount = () => appliedCoupon?.discount || 0;
-  const getFinalTotal = () => getSubtotal() - getDiscount();
+  const getFinalTotal = () => {
+    const subtotal = getSubtotal();
+    const discount = getDiscount();
+    const shipping = selectedShipping?.shipping_cost || 0;
+    return subtotal - discount + shipping;
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const createOrder = async () => {
+    if (!isFormValid) {
+      toast({
+        title: "Form Incomplete",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     setIsProcessing(true);
 
     try {
       // Validate stock before proceeding
-      const stockValidation = await supabase.functions.invoke('validate-stock', {
-        body: {
-          items: items.map(item => ({
-            productId: item.id,
-            quantity: item.quantity
-          }))
+      const stockValidation = await supabase.functions.invoke(
+        "validate-stock",
+        {
+          body: {
+            items: items.map((item) => ({
+              productId: item.id,
+              quantity: item.quantity,
+            })),
+          },
         }
-      });
+      );
 
       if (stockValidation.error) {
-        throw new Error('Failed to validate stock');
+        throw new Error("Failed to validate stock");
       }
 
       if (!stockValidation.data.valid) {
         const issues = stockValidation.data.issues;
-        const issueMessages = issues.map((issue: any) => 
-          `${issue.productName}: Only ${issue.available} available (requested ${issue.requested})`
-        ).join('\n');
-        
+        const issueMessages = issues
+          .map(
+            (issue: any) =>
+              `${issue.productName}: Only ${issue.available} available (requested ${issue.requested})`
+          )
+          .join("\n");
+
         toast({
           title: "Stock Unavailable",
           description: issueMessages,
           variant: "destructive",
         });
-        setIsProcessing(false);
-        return;
+        return null;
       }
 
       // Generate order number
-      const orderNumber = `TSY-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
-      
+      const orderNumber = `TSY-${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(7)
+        .toUpperCase()}`;
+
       // Create order
       const { data: order, error: orderError } = await supabase
         .from("orders")
-        .insert([{
-          user_id: user?.id || null,
-          email: formData.email,
-          order_number: orderNumber,
-          total_amount: getFinalTotal(),
-          subtotal: getSubtotal(),
-          tax_amount: 0,
-          shipping_amount: 0,
-          discount_amount: getDiscount(),
-          coupon_id: appliedCoupon?.id || null,
-          status: "pending",
-          shipping_address: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            address_line_1: formData.address1,
-            address_line_2: formData.address2,
-            city: formData.city,
-            state: formData.state,
-            postal_code: formData.postalCode,
-            country: formData.country,
-            phone: formData.phone,
+        .insert([
+          {
+            user_id: user?.id || null,
+            email: formData.email,
+            order_number: orderNumber,
+            total_amount: getFinalTotal(),
+            subtotal: getSubtotal(),
+            tax_amount: 0,
+            shipping_amount: selectedShipping?.shipping_cost || 0,
+            discount_amount: getDiscount(),
+            coupon_id: appliedCoupon?.id || null,
+            status: "pending",
+            shipping_address: {
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              address_line_1: formData.address1,
+              address_line_2: formData.address2,
+              city: formData.city,
+              state: formData.state,
+              postal_code: formData.postalCode,
+              country: formData.country,
+              phone: formData.phone,
+            },
           },
-        }])
+        ])
         .select()
         .single();
 
@@ -143,12 +187,36 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
+      setCurrentOrder(order);
+      return order;
+    } catch (error: any) {
+      console.error("Error creating order:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message || "Failed to create order. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
+    try {
       // Update inventory for each product
       for (const item of items) {
-        const { error: inventoryError } = await supabase.rpc("update_inventory", {
-          p_product_id: item.id,
-          p_quantity: -item.quantity,
-        });
+        const { error: inventoryError } = await supabase.rpc(
+          "update_inventory",
+          {
+            p_product_id: item.id,
+            p_quantity: item.quantity,
+            p_movement_type: "out",
+            p_reason: `Order ${currentOrder.order_number}`,
+            p_reference_id: currentOrder.id,
+          }
+        );
 
         if (inventoryError) {
           console.error("Inventory update error:", inventoryError);
@@ -156,8 +224,8 @@ const Checkout = () => {
       }
 
       // Send order confirmation
-      await supabase.functions.invoke('send-order-confirmation', {
-        body: { orderId: order.id }
+      await supabase.functions.invoke("send-order-confirmation", {
+        body: { orderId: currentOrder.id },
       });
 
       // Clear cart
@@ -165,20 +233,27 @@ const Checkout = () => {
 
       toast({
         title: "Order placed successfully!",
-        description: `Order #${order.order_number} has been created.`,
+        description: `Order #${currentOrder.order_number} has been confirmed.`,
       });
 
-      navigate("/");
+      navigate("/orders");
     } catch (error: any) {
-      console.error("Error creating order:", error);
+      console.error("Error completing order:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create order. Please try again.",
+        description:
+          "Order created but there was an issue with confirmation. Please contact support.",
         variant: "destructive",
       });
-    } finally {
-      setIsProcessing(false);
     }
+  };
+
+  const handlePaymentError = (error: string) => {
+    toast({
+      title: "Payment Failed",
+      description: error,
+      variant: "destructive",
+    });
   };
 
   if (items.length === 0) {
@@ -201,19 +276,24 @@ const Checkout = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link to="/cart">
-            <Button variant="ghost" className="text-muted-foreground hover:text-primary">
+            <Button
+              variant="ghost"
+              className="text-muted-foreground hover:text-primary"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Cart
             </Button>
           </Link>
         </div>
 
-        <h1 className="text-4xl font-light tracking-wider text-primary mb-8">Checkout</h1>
+        <h1 className="text-4xl font-light tracking-wider text-primary mb-8">
+          Checkout
+        </h1>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Checkout Form */}
           <div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
               <Card className="p-6">
                 <h2 className="text-xl font-light mb-4">Contact Information</h2>
                 <div className="space-y-4">
@@ -323,11 +403,32 @@ const Checkout = () => {
                 </div>
               </Card>
 
-              <Button type="submit" size="lg" className="w-full btn-hero" disabled={isProcessing}>
-                <CreditCard className="mr-2 h-5 w-5" />
-                {isProcessing ? "Processing..." : "Place Order"}
-              </Button>
-            </form>
+              {/* Payment Section */}
+              {isFormValid && (
+                <div>
+                  <Button
+                    onClick={createOrder}
+                    disabled={isProcessing || currentOrder}
+                    className="w-full btn-hero mb-6"
+                  >
+                    {isProcessing
+                      ? "Creating Order..."
+                      : currentOrder
+                      ? "Order Created"
+                      : "Create Order & Continue to Payment"}
+                  </Button>
+
+                  {currentOrder && (
+                    <StripePaymentForm
+                      amount={getFinalTotal()}
+                      orderId={currentOrder.id}
+                      onPaymentSuccess={handlePaymentSuccess}
+                      onPaymentError={handlePaymentError}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Order Summary */}
@@ -336,7 +437,10 @@ const Checkout = () => {
               <h2 className="text-xl font-light mb-4">Order Summary</h2>
               <div className="space-y-4">
                 {items.map((item) => (
-                  <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex gap-4">
+                  <div
+                    key={`${item.id}-${item.selectedSize}-${item.selectedColor}`}
+                    className="flex gap-4"
+                  >
                     <img
                       src={item.image}
                       alt={item.name}
@@ -347,13 +451,32 @@ const Checkout = () => {
                       <p className="text-sm text-muted-foreground">
                         Qty: {item.quantity}
                         {item.selectedSize && ` • Size: ${item.selectedSize}`}
-                        {item.selectedColor && ` • Color: ${item.selectedColor}`}
+                        {item.selectedColor &&
+                          ` • Color: ${item.selectedColor}`}
                       </p>
-                      <p className="text-sm font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-sm font-medium">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
+
+              <Separator className="my-4" />
+
+              {/* Shipping Calculator */}
+              {isFormValid && formData.country && (
+                <ShippingCalculator
+                  countryCode={formData.country}
+                  orderAmount={getSubtotal() - getDiscount()}
+                  itemCount={items.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0
+                  )}
+                  onShippingSelected={setSelectedShipping}
+                  selectedShipping={selectedShipping}
+                />
+              )}
 
               <Separator className="my-4" />
 
@@ -379,7 +502,13 @@ const Checkout = () => {
                 )}
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
-                  <span>Free</span>
+                  <span>
+                    {selectedShipping?.is_free
+                      ? "FREE"
+                      : selectedShipping
+                      ? `$${selectedShipping.shipping_cost.toFixed(2)}`
+                      : "TBD"}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax</span>

@@ -92,25 +92,53 @@ const AdminOrders = () => {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateOrderStatus = async (orderId: string, newStatus: string, notes?: string) => {
     try {
+      // Get current order to track status change
+      const { data: currentOrder } = await supabase
+        .from("orders")
+        .select("status")
+        .eq("id", orderId)
+        .single();
+
+      const oldStatus = currentOrder?.status || "unknown";
+
+      // Update order status
       const { error } = await supabase
         .from("orders")
-        .update({ status: newStatus })
-        .eq("id", orderId)
-        .select()
-        .single();
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", orderId);
 
       if (error) throw error;
 
-      // Send status update notification
-      await supabase.functions.invoke('send-order-confirmation', {
-        body: { orderId }
-      });
+      // Create status history entry
+      await supabase
+        .from("order_status_history")
+        .insert({
+          order_id: orderId,
+          old_status: oldStatus,
+          new_status: newStatus,
+          notes: notes || `Status changed from ${oldStatus} to ${newStatus}`,
+          changed_by: user?.id
+        });
+
+      // Send status update notification if status is shipped or delivered
+      if (newStatus === "shipped" || newStatus === "delivered") {
+        await supabase.functions.invoke('send-order-status-update', {
+          body: { 
+            orderId,
+            newStatus,
+            trackingNumber: newStatus === "shipped" ? trackingForm.tracking_number : null
+          }
+        });
+      }
 
       toast({
         title: "Success",
-        description: "Order status updated.",
+        description: `Order status updated to ${newStatus}.`,
       });
 
       loadOrders();
@@ -139,15 +167,16 @@ const AdminOrders = () => {
 
       if (error) throw error;
 
-      // Send notification
-      await supabase.functions.invoke('send-order-confirmation', {
-        body: { orderId: selectedOrder.id }
-      });
+      // Update status to shipped with tracking info
+      await updateOrderStatus(
+        selectedOrder.id, 
+        "shipped", 
+        `Tracking added: ${trackingForm.tracking_number}`
+      );
 
-      toast({ title: "Tracking information added" });
+      toast({ title: "Tracking information added and order marked as shipped" });
       setTrackingDialogOpen(false);
       setTrackingForm({ tracking_number: "", tracking_url: "" });
-      loadOrders();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
