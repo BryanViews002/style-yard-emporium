@@ -55,13 +55,18 @@ serve(async (req) => {
     }
 
     // Create order status history entry
-    await supabase.from("order_status_history").insert({
+    const { error: historyError } = await supabase.from("order_status_history").insert({
       order_id: orderId,
       old_status: "pending",
       new_status: "paid",
       notes: "Payment completed via Stripe",
       changed_by: order.user_id,
     });
+
+    if (historyError) {
+      console.error("Error creating status history:", historyError);
+      // Don't fail the entire request if history fails
+    }
 
     return new Response(
       JSON.stringify({

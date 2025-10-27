@@ -61,7 +61,7 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Style Yard Emporium <noreply@styleyardemporium.com>',
+            from: 'The Style Yard <onboarding@resend.dev>',
             to: [order.email],
             subject: `Order Confirmation - ${order.order_number}`,
             html: generateOrderConfirmationEmail(order),
@@ -169,7 +169,7 @@ function generateOrderConfirmationEmail(order: any): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Style Yard Emporium</h1>
+          <h1>The Style Yard</h1>
           <h2>Order Confirmation</h2>
         </div>
         
@@ -218,7 +218,7 @@ function generateOrderConfirmationEmail(order: any): string {
         
         <div class="footer">
           <p>If you have any questions about your order, please contact us.</p>
-          <p>Thank you for choosing Style Yard Emporium!</p>
+          <p>Thank you for choosing The Style Yard!</p>
         </div>
       </div>
     </body>

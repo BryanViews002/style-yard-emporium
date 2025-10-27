@@ -125,15 +125,31 @@ const AdminOrders = () => {
           changed_by: user?.id
         });
 
-      // Send status update notification if status is shipped or delivered
-      if (newStatus === "shipped" || newStatus === "delivered") {
-        await supabase.functions.invoke('send-order-status-update', {
-          body: { 
-            orderId,
-            newStatus,
-            trackingNumber: newStatus === "shipped" ? trackingForm.tracking_number : null
+      // Send status update notification for all status changes except pending
+      if (newStatus !== "pending") {
+        try {
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-order-status-update', {
+            body: { 
+              orderId,
+              newStatus,
+              trackingNumber: newStatus === "shipped" ? trackingForm.tracking_number : null
+            }
+          });
+
+          if (emailError) {
+            console.error("Error sending status update email:", emailError);
+            toast({
+              title: "Email Warning",
+              description: "Status updated, but notification email may not have been sent.",
+              variant: "default",
+            });
+          } else {
+            console.log("Status update email sent:", emailData);
           }
-        });
+        } catch (emailError) {
+          console.error("Failed to invoke email function:", emailError);
+          // Don't block the status update if email fails
+        }
       }
 
       toast({

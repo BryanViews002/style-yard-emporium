@@ -8,9 +8,16 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="text-2xl font-light tracking-wider">
-              <span className="text-hero-text">THE STYLE</span>
-              <span className="bg-gradient-to-r from-premium-gold to-accent bg-clip-text text-transparent"> YARD</span>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/IMG_4121.png" 
+                alt="The Style Yard Logo" 
+                className="h-12 w-12 object-cover rounded-full"
+              />
+              <div className="text-2xl font-light tracking-wider">
+                <span className="text-hero-text">THE STYLE</span>
+                <span className="bg-gradient-to-r from-premium-gold to-accent bg-clip-text text-transparent"> YARD</span>
+              </div>
             </div>
             <p className="text-hero-text/70 text-sm leading-relaxed">
               Curating luxury fashion and jewelry for the modern aesthetic. 

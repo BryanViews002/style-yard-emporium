@@ -40,7 +40,12 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              src="/IMG_4121.png" 
+              alt="The Style Yard Logo" 
+              className="h-10 w-10 object-cover rounded-full"
+            />
             <div className="text-2xl font-light tracking-wider">
               <span className="text-primary">THE STYLE</span>
               <span className="bg-gradient-to-r from-premium-gold to-accent bg-clip-text text-transparent"> YARD</span>

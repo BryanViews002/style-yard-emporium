@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Circular Favicon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            margin: 20px 0;
+            border-radius: 50%;
+        }
+        button {
+            background: #D4AF37;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #B8941F;
+        }
+        #preview {
+            margin: 20px 0;
+        }
+        .instructions {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Create Circular Favicon for The Style Yard</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Click "Select Image" and choose your logo (IMG_4121.png)</li>
+            <li>The image will be automatically cropped to a circle</li>
+            <li>Click "Download 32x32" for favicon</li>
+            <li>Click "Download 180x180" for Apple touch icon</li>
+            <li>Replace the files in your public folder</li>
+        </ol>
+    </div>
+
+    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+    <button onclick="document.getElementById('imageInput').click()">Select Image</button>
+    
+    <div id="preview"></div>
+    
+    <div id="downloadButtons" style="display: none;">
+        <button onclick="downloadFavicon(32)">Download 32x32 (favicon)</button>
+        <button onclick="downloadFavicon(180)">Download 180x180 (Apple)</button>
+        <button onclick="downloadFavicon(512)">Download 512x512 (Android)</button>
+    </div>
+
+    <script>
+        let originalImage = null;
+
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    originalImage = new Image();
+                    originalImage.onload = function() {
+                        createCircularPreview(256);
+                        document.getElementById('downloadButtons').style.display = 'block';
+                    };
+                    originalImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function createCircularPreview(size) {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '<h3>Preview (' + size + 'x' + size + ')</h3>';
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Create circular clip
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+
+            // Draw image
+            const minDim = Math.min(originalImage.width, originalImage.height);
+            const sx = (originalImage.width - minDim) / 2;
+            const sy = (originalImage.height - minDim) / 2;
+            
+            ctx.drawImage(originalImage, sx, sy, minDim, minDim, 0, 0, size, size);
+
+            preview.appendChild(canvas);
+        }
+
+        function downloadFavicon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Create circular clip
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+
+            // Draw image
+            const minDim = Math.min(originalImage.width, originalImage.height);
+            const sx = (originalImage.width - minDim) / 2;
+            const sy = (originalImage.height - minDim) / 2;
+            
+            ctx.drawImage(originalImage, sx, sy, minDim, minDim, 0, 0, size, size);
+
+            // Download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `favicon-${size}x${size}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+</body>
+</html>

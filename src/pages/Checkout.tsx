@@ -223,10 +223,26 @@ const Checkout = () => {
         }
       }
 
-      // Send order confirmation
-      await supabase.functions.invoke("send-order-confirmation", {
-        body: { orderId: currentOrder.id },
-      });
+      // Send order confirmation email
+      try {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke("send-order-confirmation", {
+          body: { orderId: currentOrder.id },
+        });
+
+        if (emailError) {
+          console.error("Error sending order confirmation email:", emailError);
+          toast({
+            title: "Email Warning",
+            description: "Order placed successfully, but confirmation email may not have been sent.",
+            variant: "default",
+          });
+        } else {
+          console.log("Order confirmation email sent:", emailData);
+        }
+      } catch (emailError) {
+        console.error("Failed to invoke email function:", emailError);
+        // Don't block the order flow if email fails
+      }
 
       // Clear cart
       clearCart();
