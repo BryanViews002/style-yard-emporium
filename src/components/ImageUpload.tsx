@@ -138,7 +138,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <img
               src={previewUrl}
               alt="Preview"
-              className="w-full h-48 object-cover"
+              className="w-full h-auto object-contain max-h-96"
+              style={{ aspectRatio: 'auto' }}
             />
             {!disabled && (
               <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

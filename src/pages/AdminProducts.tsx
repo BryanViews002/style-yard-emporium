@@ -475,13 +475,16 @@ const AdminProducts = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
             <Card key={product.id} className="p-4">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-48 object-cover rounded mb-4"
-              />
+              <div className="w-full mb-4 rounded overflow-hidden bg-gray-50 flex items-center justify-center" style={{ minHeight: '200px' }}>
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-auto object-contain max-h-64"
+                  style={{ aspectRatio: 'auto' }}
+                />
+              </div>
               <h3 className="font-medium text-lg mb-2">{product.name}</h3>
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                 {product.description}
               </p>
               <div className="flex justify-between items-center mb-4">
