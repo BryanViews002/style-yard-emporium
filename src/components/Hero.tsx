@@ -38,7 +38,7 @@ const Hero = () => {
                 </Button>
               </Link>
               <Link to="/shop?category=jewelry">
-                <Button size="lg" variant="outline" className="btn-gold border-premium-gold text-premium-gold hover:bg-premium-gold hover:text-primary">
+                <Button size="lg" variant="outline" className="btn-gold border-white text-white hover:bg-white hover:text-primary">
                   Explore Jewelry
                 </Button>
               </Link>

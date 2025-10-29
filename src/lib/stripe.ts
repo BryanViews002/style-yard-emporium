@@ -1,10 +1,16 @@
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 
 // Initialize Stripe with your publishable key
-const stripePromise: Promise<Stripe | null> = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
-    "pk_test_your_publishable_key_here"
-);
+// Make sure to set VITE_STRIPE_PUBLISHABLE_KEY in your Vercel environment variables
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+if (!stripeKey) {
+  console.error('CRITICAL: Stripe publishable key is not set. Please add VITE_STRIPE_PUBLISHABLE_KEY to your environment variables.');
+}
+
+const stripePromise: Promise<Stripe | null> = stripeKey 
+  ? loadStripe(stripeKey)
+  : Promise.resolve(null);
 
 export const getStripe = () => stripePromise;
 
