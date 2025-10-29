@@ -12,10 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 import { CreditCard, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-const stripePromise = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
-    "pk_test_your_publishable_key_here"
-);
+// Initialize Stripe - must have valid publishable key
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+if (!stripeKey) {
+  console.error('CRITICAL: VITE_STRIPE_PUBLISHABLE_KEY is not set. Please add it to your environment variables.');
+}
+
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 interface PaymentFormProps {
   amount: number;

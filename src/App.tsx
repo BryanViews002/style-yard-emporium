@@ -13,6 +13,7 @@ import NetworkStatus from "@/components/NetworkStatus";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import LoadingIntro from "@/components/LoadingIntro";
+import ScrollToTop from "@/components/ScrollToTop";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -62,6 +63,7 @@ const AppContent = () => {
 
   return (
     <Layout>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />

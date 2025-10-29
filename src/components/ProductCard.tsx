@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 
 export interface Product {
@@ -28,25 +28,12 @@ const ProductCard = ({
   onAddToCart, 
 }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
   const { user } = useAuth();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { toast } = useToast();
 
-  useEffect(() => {
-    checkWishlist();
-  }, [user, product.id]);
-
-  const checkWishlist = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from("wishlists")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("product_id", product.id)
-      .maybeSingle();
-    
-    setIsFavorite(!!data);
-  };
+  const isFavorite = isInWishlist(product.id);
 
   const toggleWishlist = async () => {
     if (!user) {
@@ -54,14 +41,18 @@ const ProductCard = ({
       return;
     }
 
-    if (isFavorite) {
-      await supabase.from("wishlists").delete().eq("user_id", user.id).eq("product_id", product.id);
-      toast({ title: "Removed from wishlist" });
-    } else {
-      await supabase.from("wishlists").insert({ user_id: user.id, product_id: product.id });
-      toast({ title: "Added to wishlist" });
+    setIsTogglingWishlist(true);
+    try {
+      if (isFavorite) {
+        await removeFromWishlist(product.id);
+        toast({ title: "Removed from wishlist" });
+      } else {
+        await addToWishlist(product.id);
+        toast({ title: "Added to wishlist" });
+      }
+    } finally {
+      setIsTogglingWishlist(false);
     }
-    setIsFavorite(!isFavorite);
   };
 
   return (
@@ -95,6 +86,7 @@ const ProductCard = ({
             size="sm"
             variant="outline"
             onClick={toggleWishlist}
+            disabled={isTogglingWishlist}
             className={isFavorite ? "bg-accent text-accent-foreground" : ""}
           >
             <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />

@@ -260,10 +260,12 @@ const Shop = () => {
                   <SlidersHorizontal className="h-5 w-5 text-accent" />
                   <h3 className="text-xl font-light">Filters</h3>
                 </div>
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
-                  <X className="h-3 w-3 mr-1" />
-                  Clear All
-                </Button>
+                {(filters.category !== 'all' || filters.inStock || searchQuery || filters.priceRange[0] !== 0 || filters.priceRange[1] !== 500) && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
+                    <X className="h-3 w-3 mr-1" />
+                    Clear All
+                  </Button>
+                )}
               </div>
               <Separator className="mb-6" />
 

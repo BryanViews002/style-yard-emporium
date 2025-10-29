@@ -8,19 +8,41 @@ import { Heart, ShoppingBag, Trash2, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/hooks/use-toast';
 
+interface WishlistItem {
+  id: string;
+  product_id: string;
+  product_name: string;
+  product_slug: string;
+  product_price: number;
+  product_image: string;
+  product_brand?: string;
+  created_at: string;
+}
+
 const Wishlist = () => {
   const { wishlist, isLoading, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { toast } = useToast();
 
-  const handleAddToCart = async (productId: string, productName: string) => {
+  const handleAddToCart = (item: WishlistItem) => {
     try {
-      await addToCart(productId, 1);
+      // Convert wishlist item to Product format for cart
+      const product = {
+        id: item.product_id,
+        name: item.product_name,
+        price: item.product_price,
+        image: item.product_image,
+        category: '', // Not available in wishlist data
+        description: '',
+      };
+      
+      addToCart(product, 1);
       toast({
         title: "Added to Cart",
-        description: `${productName} has been added to your cart.`,
+        description: `${item.product_name} has been added to your cart.`,
       });
     } catch (error) {
+      console.error('Error adding to cart:', error);
       toast({
         title: "Error",
         description: "Failed to add item to cart.",
@@ -84,7 +106,7 @@ const Wishlist = () => {
                 Start adding items you love to your wishlist
               </p>
               <Button asChild>
-                <Link to="/products">Browse Products</Link>
+                <Link to="/shop">Browse Products</Link>
               </Button>
             </CardContent>
           </Card>
@@ -93,7 +115,7 @@ const Wishlist = () => {
             {wishlist.map((item) => (
               <Card key={item.id} className="group hover:shadow-lg transition-shadow">
                 <div className="relative">
-                  <Link to={`/products/${item.product_slug}`}>
+                  <Link to={`/product/${item.product_id}`}>
                     <img
                       src={item.product_image}
                       alt={item.product_name}
@@ -114,7 +136,7 @@ const Wishlist = () => {
                     <div>
                       <h3 className="font-medium text-lg line-clamp-2 mb-1">
                         <Link 
-                          to={`/products/${item.product_slug}`}
+                          to={`/product/${item.product_id}`}
                           className="hover:text-primary transition-colors"
                         >
                           {item.product_name}
@@ -140,7 +162,7 @@ const Wishlist = () => {
                       <Button
                         size="sm"
                         className="flex-1"
-                        onClick={() => handleAddToCart(item.product_id, item.product_name)}
+                        onClick={() => handleAddToCart(item)}
                       >
                         <ShoppingBag className="h-4 w-4 mr-2" />
                         Add to Cart
@@ -152,7 +174,7 @@ const Wishlist = () => {
                         asChild
                         className="flex-1"
                       >
-                        <Link to={`/products/${item.product_slug}`}>
+                        <Link to={`/product/${item.product_id}`}>
                           View Details
                         </Link>
                       </Button>
@@ -172,10 +194,10 @@ const Wishlist = () => {
             </p>
             <div className="flex gap-4 justify-center">
               <Button variant="outline" asChild>
-                <Link to="/products">Browse All Products</Link>
+                <Link to="/shop">Browse All Products</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/products?featured=true">Featured Items</Link>
+                <Link to="/shop?featured=true">Featured Items</Link>
               </Button>
             </div>
           </div>
