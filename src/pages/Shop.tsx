@@ -69,6 +69,9 @@ const Shop = () => {
 
     // Filter by category ID or name
     if (filters.category !== "all") {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filters.category);
+      if (!isUUID && categories.length === 0) return;
+
       const categoryObj = categories.find(c => c.name.toLowerCase() === filters.category.toLowerCase() || c.id === filters.category);
       const categoryIdToFilter = categoryObj ? categoryObj.id : filters.category;
       result = result.filter(
@@ -108,7 +111,14 @@ const Shop = () => {
 
     setFilteredProducts(result);
     setCurrentPage(1); // Reset to first page on filter change
-  }, [filters, products, searchQuery]);
+  }, [filters, products, searchQuery, categories]);
+
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category") || "all";
+    if (categoryFromUrl !== filters.category) {
+      setFilters(prev => ({ ...prev, category: categoryFromUrl }));
+    }
+  }, [searchParams, filters.category]);
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

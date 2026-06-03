@@ -115,8 +115,22 @@ const AdminProducts = () => {
       if (productsRes.error) throw productsRes.error;
       if (categoriesRes.error) throw categoriesRes.error;
 
+      let loadedCategories = categoriesRes.data || [];
+      
+      // Auto-seed Categories if empty
+      if (loadedCategories.length === 0) {
+        const { data: newCats } = await supabase.from("categories").insert([
+          { name: "Clothes", slug: "clothes", description: "Clothing collection" },
+          { name: "Jewelry", slug: "jewelry", description: "Jewelry collection" }
+        ]).select();
+        
+        if (newCats) {
+          loadedCategories = newCats;
+        }
+      }
+
       setProducts(productsRes.data || []);
-      setCategories(categoriesRes.data || []);
+      setCategories(loadedCategories);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -249,9 +263,24 @@ const AdminProducts = () => {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
+      // Manually delete safe related records first to avoid 409 Conflict (foreign key constraints)
+      await Promise.all([
+        supabase.from("product_images").delete().eq("product_id", id),
+        supabase.from("product_reviews").delete().eq("product_id", id),
+        supabase.from("wishlists").delete().eq("product_id", id),
+        supabase.from("product_variants").delete().eq("product_id", id),
+        supabase.from("inventory_movements").delete().eq("product_id", id),
+        supabase.from("bundle_products").delete().eq("product_id", id),
+      ]);
+
       const { error } = await supabase.from("products").delete().eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23503') {
+          throw new Error("Cannot delete this product because it is attached to existing orders. Please uncheck 'Active' to hide it instead.");
+        }
+        throw error;
+      }
 
       toast({ title: "Product deleted successfully" });
       loadData();
@@ -422,12 +451,34 @@ const AdminProducts = () => {
                 </div>
                 <div>
                   <Label htmlFor="size_options">
-                    Size Options (comma-separated)
+                    Size Options
                   </Label>
+                  <div className="flex gap-2 flex-wrap mb-3 mt-1">
+                    {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => {
+                      const currentSizes = formData.size_options.split(',').map(s => s.trim()).filter(Boolean);
+                      const isSelected = currentSizes.includes(size);
+                      return (
+                        <label key={size} className="flex items-center gap-1 text-sm border p-1 rounded px-2 cursor-pointer hover:bg-gray-50">
+                          <input 
+                            type="checkbox" 
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({...formData, size_options: [...currentSizes, size].join(', ')});
+                              } else {
+                                setFormData({...formData, size_options: currentSizes.filter(s => s !== size).join(', ')});
+                              }
+                            }}
+                          />
+                          {size}
+                        </label>
+                      );
+                    })}
+                  </div>
                   <Input
                     id="size_options"
                     name="size_options"
-                    placeholder="S, M, L, XL"
+                    placeholder="Custom sizes (comma-separated)..."
                     value={formData.size_options}
                     onChange={handleInputChange}
                   />

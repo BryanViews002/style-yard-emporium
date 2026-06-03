@@ -111,11 +111,9 @@ const ProductCard = ({
 
       {/* Product Info */}
       <div className="p-4 space-y-2">
-        <Link to={`/product/${product.id}`} className="block">
-          <h3 className="font-light text-lg text-foreground hover:text-accent transition-colors duration-300">
-            {product.name}
-          </h3>
-        </Link>
+        <h3 className="font-light text-lg text-foreground">
+          {product.name}
+        </h3>
         <p className="text-muted-foreground text-sm font-light capitalize">
           {product.category}
         </p>

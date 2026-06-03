@@ -15,7 +15,6 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Shop", href: "/shop" },
     { label: "Clothes", href: "/shop?category=clothes" },
     { label: "Jewelry", href: "/shop?category=jewelry" },
     { label: "Contact", href: "/contact" },

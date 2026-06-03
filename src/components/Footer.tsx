@@ -23,31 +23,14 @@ const Footer = () => {
               Curating luxury fashion and jewelry for the modern aesthetic. 
               Elevate your style with our carefully selected collection.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-hero-text/70 hover:text-accent transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-hero-text/70 hover:text-accent transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-hero-text/70 hover:text-accent transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-hero-text/70 hover:text-accent transition-colors">
-                <Mail className="h-5 w-5" />
-              </a>
-            </div>
+
           </div>
 
           {/* Shop */}
           <div>
             <h3 className="text-hero-text font-medium mb-4 tracking-wide">Shop</h3>
             <ul className="space-y-3 text-sm">
-              <li>
-                <Link to="/shop" className="text-hero-text/70 hover:text-accent transition-colors">
-                  All Products
-                </Link>
-              </li>
+
               <li>
                 <Link to="/shop?category=clothes" className="text-hero-text/70 hover:text-accent transition-colors">
                   Clothing

@@ -66,7 +66,7 @@ const Contact = () => {
 
   const handleWhatsAppClick = () => {
     const message = "Hi! I'm interested in your products at The Style Yard.";
-    const whatsappUrl = `https://wa.me/1234567890?text=${encodeURIComponent(
+    const whatsappUrl = `https://wa.me/2349136552909?text=${encodeURIComponent(
       message
     )}`;
     window.open(whatsappUrl, "_blank");
@@ -221,7 +221,7 @@ const Contact = () => {
                   <div>
                     <h3 className="font-medium text-primary mb-1">Call us</h3>
                     <p className="text-muted-foreground">
-                      +1 (555) 123-4567
+                      +2349136552909
                       <br />
                       Mon-Fri 9:00 AM - 6:00 PM EST
                     </p>
@@ -233,9 +233,7 @@ const Contact = () => {
                   <div>
                     <h3 className="font-medium text-primary mb-1">Email us</h3>
                     <p className="text-muted-foreground">
-                      hello@thestyleyard.com
-                      <br />
-                      support@thestyleyard.com
+                      thestyleyardd@gmail.com
                     </p>
                   </div>
                 </div>
