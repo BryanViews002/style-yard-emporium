@@ -34,7 +34,7 @@ const Shop = () => {
   const productsPerPage = 12;
 
   const [filters, setFilters] = useState({
-    category: searchParams.get("category") || "all",
+    category: searchParams.get("category") || "clothes",
     priceRange: [0, 500],
     sortBy: sortBy,
     inStock: false,
@@ -69,14 +69,18 @@ const Shop = () => {
 
     // Filter by category ID or name
     if (filters.category !== "all") {
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filters.category);
-      if (!isUUID && categories.length === 0) return;
-
       const categoryObj = categories.find(c => c.name.toLowerCase() === filters.category.toLowerCase() || c.id === filters.category);
-      const categoryIdToFilter = categoryObj ? categoryObj.id : filters.category;
-      result = result.filter(
-        (product) => product.category_id === categoryIdToFilter
-      );
+      
+      result = result.filter((product) => {
+        // Match by category_id if we found the category object
+        if (categoryObj && product.category_id === categoryObj.id) return true;
+        // Match by UUID if the filter is exactly the UUID
+        if (product.category_id === filters.category) return true;
+        // Fallback: match by the text 'category' field
+        if (product.category && product.category.toLowerCase() === filters.category.toLowerCase()) return true;
+        
+        return false;
+      });
     }
 
     // Filter by price range
@@ -114,7 +118,7 @@ const Shop = () => {
   }, [filters, products, searchQuery, categories]);
 
   useEffect(() => {
-    const categoryFromUrl = searchParams.get("category") || "all";
+    const categoryFromUrl = searchParams.get("category") || "clothes";
     if (categoryFromUrl !== filters.category) {
       setFilters(prev => ({ ...prev, category: categoryFromUrl }));
     }
