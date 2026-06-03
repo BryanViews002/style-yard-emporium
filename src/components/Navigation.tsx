@@ -15,14 +15,20 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Clothes", href: "/shop?category=clothes" },
-    { label: "Jewelry", href: "/shop?category=jewelry" },
+    { label: "Clothes", href: "/shop?category=clothes", category: "clothes" },
+    { label: "Jewelry", href: "/shop?category=jewelry", category: "jewelry" },
     { label: "Contact", href: "/contact" },
   ];
 
-  const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
+  const isActive = (item: (typeof navItems)[number]) => {
+    if (item.href === "/") return location.pathname === "/";
+
+    if (item.category) {
+      const activeCategory = new URLSearchParams(location.search).get("category");
+      return location.pathname === "/shop" && activeCategory === item.category;
+    }
+
+    return location.pathname.startsWith(item.href);
   };
 
   const handleSignOut = async () => {
@@ -58,7 +64,7 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                 key={item.label}
                 to={item.href}
                 className={`text-sm font-light tracking-wide transition-colors duration-300 ${
-                  isActive(item.href)
+                  isActive(item)
                     ? "text-accent border-b border-accent"
                     : "text-muted-foreground hover:text-primary"
                 }`}
@@ -199,7 +205,7 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
                 key={item.label}
                 to={item.href}
                 className={`block py-2 text-base font-light tracking-wide transition-colors duration-300 ${
-                  isActive(item.href) ? "text-accent font-medium" : "text-muted-foreground"
+                  isActive(item) ? "text-accent font-medium" : "text-muted-foreground"
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >

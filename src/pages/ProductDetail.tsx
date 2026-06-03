@@ -8,22 +8,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Heart, ShoppingBag, Star } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Star } from "lucide-react";
 import { useProduct } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import WishlistButton from "@/components/WishlistButton";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
 import ProductReview from "@/components/ProductReview";
+import { formatNaira } from "@/lib/catalog";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const { user } = useAuth();
   const { data: product, isLoading } = useProduct(id || "");
 
   const [selectedSize, setSelectedSize] = useState("");
@@ -170,7 +168,7 @@ const ProductDetail = () => {
               </h1>
               <div className="flex items-center gap-4 mb-6">
                 <span className="text-3xl font-light text-primary">
-                  ₦{product.price}
+                  {formatNaira(product.price)}
                 </span>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
@@ -293,12 +291,15 @@ const ProductDetail = () => {
               <h3 className="text-lg font-medium text-primary mb-4">
                 Features
               </h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>• Premium quality materials</li>
-                <li>• Ethically sourced and manufactured</li>
-                <li>• Free shipping on orders over ₦100</li>
-                <li>• Clients are only eligible to return a product for replace clothes and no return for jewelry.</li>
-                <li>• Size guide available</li>
+              <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                <li>Premium quality materials</li>
+                <li>Ethically sourced and manufactured</li>
+                <li>Free shipping on qualifying orders</li>
+                <li>
+                  Clients can request clothing replacements. Jewelry is not
+                  eligible for returns.
+                </li>
+                <li>Size guide available</li>
               </ul>
             </div>
           </div>

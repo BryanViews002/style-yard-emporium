@@ -25,6 +25,13 @@ import {
 } from "@/components/ui/dialog";
 import ImageUpload from "@/components/ImageUpload";
 import { ImageGalleryUploader } from "@/components/ImageGalleryUploader";
+import {
+  createProductSlug,
+  formatNaira,
+  parseListInput,
+  SHOP_CATEGORIES,
+  type CategoryRecord,
+} from "@/lib/catalog";
 
 interface Product {
   id: string;
@@ -43,6 +50,14 @@ interface Product {
   color_options: string[];
 }
 
+interface ProductCategory extends CategoryRecord {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+const SIZE_PRESETS = ["One Size", "XS", "S", "M", "L", "XL", "XXL"];
+
 const AdminProducts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -50,7 +65,7 @@ const AdminProducts = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productImages, setProductImages] = useState<any[]>([]);
@@ -102,32 +117,52 @@ const AdminProducts = () => {
     loadData();
   };
 
+  const ensureShopCategories = async () => {
+    const { error: upsertError } = await supabase
+      .from("categories")
+      .upsert(
+        SHOP_CATEGORIES.map((category) => ({
+          name: category.name,
+          slug: category.slug,
+          description: category.description,
+        })),
+        { onConflict: "slug" }
+      );
+
+    if (upsertError) throw upsertError;
+
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .in(
+        "slug",
+        SHOP_CATEGORIES.map((category) => category.slug)
+      )
+      .order("name");
+
+    if (error) throw error;
+    return (data || []) as ProductCategory[];
+  };
+
+  const getDefaultCategoryId = (categoryList = categories) =>
+    categoryList.find((category) => category.slug === "clothes")?.id ||
+    categoryList[0]?.id ||
+    "";
+
+  const getCategoryName = (categoryId: string | null) =>
+    categories.find((category) => category.id === categoryId)?.name ||
+    "Uncategorized";
+
   const loadData = async () => {
     try {
-      const [productsRes, categoriesRes] = await Promise.all([
-        supabase
-          .from("products")
-          .select("*")
-          .order("created_at", { ascending: false }),
-        supabase.from("categories").select("*").order("name"),
-      ]);
+      const loadedCategories = await ensureShopCategories();
+      const productsRes = await supabase
+        .from("products")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
 
       if (productsRes.error) throw productsRes.error;
-      if (categoriesRes.error) throw categoriesRes.error;
-
-      let loadedCategories = categoriesRes.data || [];
-      
-      // Auto-seed Categories if empty
-      if (loadedCategories.length === 0) {
-        const { data: newCats } = await supabase.from("categories").insert([
-          { name: "Clothes", slug: "clothes", description: "Clothing collection" },
-          { name: "Jewelry", slug: "jewelry", description: "Jewelry collection" }
-        ]).select();
-        
-        if (newCats) {
-          loadedCategories = newCats;
-        }
-      }
 
       setProducts(productsRes.data || []);
       setCategories(loadedCategories);
@@ -146,10 +181,21 @@ const AdminProducts = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value, type } = e.target;
-    setFormData({
-      ...formData,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    setFormData((prev) => {
+      const next = {
+        ...prev,
+        [name]:
+          type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      };
+
+      if (
+        name === "name" &&
+        (!prev.slug || prev.slug === createProductSlug(prev.name))
+      ) {
+        next.slug = createProductSlug(value);
+      }
+
+      return next;
     });
   };
 
@@ -163,7 +209,7 @@ const AdminProducts = () => {
       stock_quantity: "0",
       is_featured: false,
       is_active: true,
-      category_id: "",
+      category_id: getDefaultCategoryId(),
       sku: "",
       brand: "",
       size_options: "",
@@ -183,7 +229,10 @@ const AdminProducts = () => {
       stock_quantity: product.stock_quantity.toString(),
       is_featured: product.is_featured,
       is_active: product.is_active,
-      category_id: product.category_id || "",
+      category_id:
+        categories.some((category) => category.id === product.category_id)
+          ? product.category_id || ""
+          : getDefaultCategoryId(),
       sku: product.sku || "",
       brand: product.brand || "",
       size_options: product.size_options?.join(", ") || "",
@@ -204,9 +253,18 @@ const AdminProducts = () => {
     e.preventDefault();
 
     try {
+      if (!formData.category_id) {
+        toast({
+          title: "Category required",
+          description: "Choose Clothes or Jewelry before saving this product.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const productData = {
         name: formData.name,
-        slug: formData.slug,
+        slug: formData.slug || createProductSlug(formData.name),
         description: formData.description,
         price: parseFloat(formData.price),
         image: formData.image,
@@ -216,12 +274,8 @@ const AdminProducts = () => {
         category_id: formData.category_id || null,
         sku: formData.sku || null,
         brand: formData.brand || null,
-        size_options: formData.size_options
-          ? formData.size_options.split(",").map((s) => s.trim())
-          : [],
-        color_options: formData.color_options
-          ? formData.color_options.split(",").map((c) => c.trim())
-          : [],
+        size_options: parseListInput(formData.size_options),
+        color_options: parseListInput(formData.color_options),
       };
 
       if (editingProduct) {
@@ -263,27 +317,16 @@ const AdminProducts = () => {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
-      // Manually delete safe related records first to avoid 409 Conflict (foreign key constraints)
-      await Promise.all([
-        supabase.from("product_images").delete().eq("product_id", id),
-        supabase.from("product_reviews").delete().eq("product_id", id),
-        supabase.from("wishlists").delete().eq("product_id", id),
-        supabase.from("product_variants").delete().eq("product_id", id),
-        supabase.from("inventory_movements").delete().eq("product_id", id),
-        supabase.from("bundle_products").delete().eq("product_id", id),
-      ]);
+      const { error } = await supabase
+        .from("products")
+        .update({ is_active: false })
+        .eq("id", id);
 
-      const { error } = await supabase.from("products").delete().eq("id", id);
-
-      if (error) {
-        if (error.code === '23503') {
-          throw new Error("Cannot delete this product because it is attached to existing orders. Please uncheck 'Active' to hide it instead.");
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       toast({ title: "Product deleted successfully" });
       loadData();
+      window.dispatchEvent(new CustomEvent("productsUpdated"));
     } catch (error: any) {
       toast({
         title: "Error",
@@ -450,23 +493,32 @@ const AdminProducts = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="size_options">
-                    Size Options
-                  </Label>
+                  <Label htmlFor="size_options">Available Sizes</Label>
                   <div className="flex gap-2 flex-wrap mb-3 mt-1">
-                    {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => {
-                      const currentSizes = formData.size_options.split(',').map(s => s.trim()).filter(Boolean);
+                    {SIZE_PRESETS.map((size) => {
+                      const currentSizes = parseListInput(formData.size_options);
                       const isSelected = currentSizes.includes(size);
                       return (
-                        <label key={size} className="flex items-center gap-1 text-sm border p-1 rounded px-2 cursor-pointer hover:bg-gray-50">
-                          <input 
-                            type="checkbox" 
+                        <label
+                          key={size}
+                          className="flex items-center gap-1 text-sm border p-1 rounded px-2 cursor-pointer hover:bg-gray-50"
+                        >
+                          <input
+                            type="checkbox"
                             checked={isSelected}
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setFormData({...formData, size_options: [...currentSizes, size].join(', ')});
+                                setFormData({
+                                  ...formData,
+                                  size_options: [...currentSizes, size].join(", "),
+                                });
                               } else {
-                                setFormData({...formData, size_options: currentSizes.filter(s => s !== size).join(', ')});
+                                setFormData({
+                                  ...formData,
+                                  size_options: currentSizes
+                                    .filter((selectedSize) => selectedSize !== size)
+                                    .join(", "),
+                                });
                               }
                             }}
                           />
@@ -478,7 +530,7 @@ const AdminProducts = () => {
                   <Input
                     id="size_options"
                     name="size_options"
-                    placeholder="Custom sizes (comma-separated)..."
+                    placeholder="Custom sizes, comma-separated"
                     value={formData.size_options}
                     onChange={handleInputChange}
                   />
@@ -535,11 +587,16 @@ const AdminProducts = () => {
                 />
               </div>
               <h3 className="font-medium text-lg mb-2">{product.name}</h3>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
+                {getCategoryName(product.category_id)}
+              </p>
               <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                 {product.description}
               </p>
               <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-medium">₦{product.price}</span>
+                <span className="text-lg font-medium">
+                  {formatNaira(product.price)}
+                </span>
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <Package className="h-4 w-4" />
                   {product.stock_quantity}

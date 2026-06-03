@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
@@ -6,31 +5,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
-import { supabase } from "@/integrations/supabase/client";
 
 const Home = () => {
   const { addToCart } = useCart();
   const { data: allProducts = [] } = useProducts();
   const featuredProducts = allProducts.filter((p) => p.is_featured).slice(0, 4);
-  const [categoryIds, setCategoryIds] = useState<{ [key: string]: string }>({});
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      const { data } = await supabase
-        .from("categories")
-        .select("id, name")
-        .order("name");
-      
-      if (data) {
-        const categoryMap: { [key: string]: string } = {};
-        data.forEach((cat) => {
-          categoryMap[cat.name.toLowerCase()] = cat.id;
-        });
-        setCategoryIds(categoryMap);
-      }
-    };
-    loadCategories();
-  }, []);
 
   return (
     <div className="min-h-screen">
@@ -52,7 +31,7 @@ const Home = () => {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Clothes Category */}
             <Link
-              to={categoryIds.clothes ? `/shop?category=${categoryIds.clothes}` : "/shop"}
+              to="/shop?category=clothes"
               className="group relative overflow-hidden rounded-lg luxury-hover"
             >
               <div className="aspect-[4/3] bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
@@ -76,7 +55,7 @@ const Home = () => {
 
             {/* Jewelry Category */}
             <Link
-              to={categoryIds.jewelry ? `/shop?category=${categoryIds.jewelry}` : "/shop"}
+              to="/shop?category=jewelry"
               className="group relative overflow-hidden rounded-lg luxury-hover"
             >
               <div className="aspect-[4/3] bg-gradient-to-br from-soft-rose to-luxury-rose/30 flex items-center justify-center">
@@ -121,10 +100,16 @@ const Home = () => {
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Link to="/shop">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+            <Link to="/shop?category=clothes">
               <Button size="lg" className="btn-hero">
-                View All Products
+                Shop Clothes
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/shop?category=jewelry">
+              <Button size="lg" variant="outline">
+                Shop Jewelry
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>

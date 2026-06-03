@@ -98,11 +98,7 @@ export const generateOrganizationStructuredData = (org: OrganizationStructuredDa
         "email": org.contactPoint.email
       }
     }),
-    "sameAs": [
-      "https://www.facebook.com/styleyardemporium",
-      "https://www.instagram.com/styleyardemporium",
-      "https://www.twitter.com/styleyardemporium"
-    ]
+    "sameAs": []
   };
 };
 
@@ -142,8 +138,8 @@ export const generateStoreStructuredData = () => {
     "url": "https://styleyardemporium.com",
     "description": "Premium fashion and lifestyle products",
     "image": "https://styleyardemporium.com/og-image.jpg",
-    "telephone": "+1-555-STYLE-YARD",
-    "email": "info@styleyardemporium.com",
+    "telephone": "+2349136552909",
+    "email": "thestyleyardd@gmail.com",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "123 Fashion Avenue",
@@ -154,7 +150,7 @@ export const generateStoreStructuredData = () => {
     },
     "openingHours": "Mo-Fr 09:00-18:00",
     "paymentAccepted": "Credit Card, PayPal, Apple Pay, Google Pay",
-    "currenciesAccepted": "USD"
+    "currenciesAccepted": "NGN"
   };
 };
 

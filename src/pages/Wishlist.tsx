@@ -7,6 +7,7 @@ import { useWishlist } from '@/context/WishlistContext';
 import { Heart, ShoppingBag, Trash2, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { formatNaira } from '@/lib/catalog';
 
 interface WishlistItem {
   id: string;
@@ -135,12 +136,7 @@ const Wishlist = () => {
                   <div className="space-y-3">
                     <div>
                       <h3 className="font-medium text-lg line-clamp-2 mb-1">
-                        <Link 
-                          to={`/product/${item.product_id}`}
-                          className="hover:text-primary transition-colors"
-                        >
-                          {item.product_name}
-                        </Link>
+                        {item.product_name}
                       </h3>
                       {item.product_brand && (
                         <Badge variant="secondary" className="text-xs">
@@ -151,7 +147,7 @@ const Wishlist = () => {
 
                     <div className="flex items-center justify-between">
                       <span className="text-xl font-bold text-primary">
-                        ${item.product_price.toFixed(2)}
+                        {formatNaira(item.product_price)}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         Added {new Date(item.created_at).toLocaleDateString()}

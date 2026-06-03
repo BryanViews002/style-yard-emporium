@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
+import { formatNaira } from "@/lib/catalog";
 
 export interface Product {
   id: string;
@@ -17,6 +18,7 @@ export interface Product {
   colors?: string[];
   inStock?: boolean;
   stock_quantity?: number;
+  category_slug?: string | null;
 }
 
 interface ProductCardProps {
@@ -63,7 +65,7 @@ const ProductCard = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative aspect-square overflow-hidden">
-        <Link to={`/product/${product.id}`}>
+        <Link to={`/product/${product.id}`} aria-label={`View ${product.name}`}>
           <img 
             src={product.image} 
             alt={product.name}
@@ -72,12 +74,12 @@ const ProductCard = ({
         </Link>
         
         {/* Overlay Actions */}
-        <div className={`absolute inset-0 bg-primary/20 flex items-center justify-center gap-2 transition-opacity duration-300 ${
+        <div className={`pointer-events-none absolute inset-0 bg-primary/20 flex items-center justify-center gap-2 transition-opacity duration-300 ${
           isHovered ? "opacity-100" : "opacity-0"
         }`}>
           <Button
             size="sm"
-            className="btn-hero"
+            className="btn-hero pointer-events-auto"
             onClick={() => onAddToCart?.(product)}
           >
             <ShoppingBag className="h-4 w-4 mr-2" />
@@ -88,7 +90,10 @@ const ProductCard = ({
             variant="outline"
             onClick={toggleWishlist}
             disabled={isTogglingWishlist}
-            className={isFavorite ? "bg-accent text-accent-foreground" : ""}
+            aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
+            className={`pointer-events-auto ${
+              isFavorite ? "bg-accent text-accent-foreground" : ""
+            }`}
           >
             <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
           </Button>
@@ -119,7 +124,7 @@ const ProductCard = ({
         </p>
         <div className="flex items-center justify-between">
           <span className="text-xl font-light text-primary">
-            ₦{product.price}
+            {formatNaira(product.price)}
           </span>
           {product.colors && product.colors.length > 0 && (
             <div className="flex gap-1">

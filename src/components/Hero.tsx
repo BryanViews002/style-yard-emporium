@@ -31,9 +31,9 @@ const Hero = () => {
               crafted for the modern aesthetic.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/shop">
+              <Link to="/shop?category=clothes">
                 <Button size="lg" className="btn-hero group">
-                  Shop Collection
+                  Shop Clothes
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>

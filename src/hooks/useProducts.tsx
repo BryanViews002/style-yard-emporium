@@ -1,6 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import {
+  getProductCategoryLabel,
+  resolveProductCategorySlug,
+  type ShopCategorySlug,
+} from "@/lib/catalog";
 
 export interface Product {
   id: string;
@@ -16,6 +21,7 @@ export interface Product {
   stock_quantity?: number;
   is_featured?: boolean;
   category_id?: string;
+  category_slug?: ShopCategorySlug | null;
   sku?: string;
   brand?: string;
   size_options?: string[];
@@ -41,19 +47,22 @@ export const useProducts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("*, categories:category_id(id, name, slug)")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      return data.map((product: any) => ({
+      return (data ?? []).map((product: any) => {
+        const categorySlug = resolveProductCategorySlug(product);
+
+        return {
         id: product.id,
         name: product.name,
         price: parseFloat(product.price),
         image: product.image,
-        category:
-          product.slug || product.name.toLowerCase().replace(/\s+/g, "-"),
+        category: getProductCategoryLabel(product),
+        category_slug: categorySlug,
         description: product.description,
         sizes: product.size_options || [],
         colors: product.color_options || [],
@@ -65,7 +74,8 @@ export const useProducts = () => {
         sku: product.sku,
         brand: product.brand,
         created_at: product.created_at,
-      })) as Product[];
+        };
+      }) as Product[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
@@ -80,7 +90,7 @@ export const useProduct = (id?: string) => {
 
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("*, categories:category_id(id, name, slug)")
         .eq("id", id)
         .eq("is_active", true)
         .maybeSingle();
@@ -88,12 +98,15 @@ export const useProduct = (id?: string) => {
       if (error) throw error;
       if (!data) return null;
 
+      const categorySlug = resolveProductCategorySlug(data as any);
+
       return {
         id: data.id,
         name: data.name,
         price: Number(data.price),
         image: data.image,
-        category: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
+        category: getProductCategoryLabel(data as any),
+        category_slug: categorySlug,
         description: data.description,
         sizes: data.size_options || [],
         colors: data.color_options || [],
