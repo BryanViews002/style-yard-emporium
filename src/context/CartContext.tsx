@@ -31,12 +31,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (existingItem) {
         return prevItems.map(item =>
           item.id === product.id && item.selectedSize === size && item.selectedColor === color
-            ? { ...item, quantity: item.stock_quantity !== undefined ? Math.min(item.quantity + quantity, item.stock_quantity) : item.quantity + quantity }
+            ? { ...item, quantity: item.stock_quantity != null ? Math.min(item.quantity + quantity, item.stock_quantity) : item.quantity + quantity }
             : item
         );
       }
 
-      const initialQuantity = product.stock_quantity !== undefined ? Math.min(quantity, product.stock_quantity) : quantity;
+      const initialQuantity = product.stock_quantity != null ? Math.min(quantity, product.stock_quantity) : quantity;
       return [...prevItems, { ...product, quantity: initialQuantity, selectedSize: size, selectedColor: color }];
     });
   };
@@ -54,7 +54,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setItems(prevItems =>
       prevItems.map(item => {
         if (item.id === productId) {
-          const newQuantity = item.stock_quantity !== undefined ? Math.min(quantity, item.stock_quantity) : quantity;
+          const newQuantity = item.stock_quantity != null ? Math.min(quantity, item.stock_quantity) : quantity;
           return { ...item, quantity: newQuantity };
         }
         return item;

@@ -8,6 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 
 const Cart = () => {
   const { items, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
+
+  const isAtStockLimit = (item: ReturnType<typeof useCart>['items'][0]) => {
+    const stock = item.stock_quantity;
+    return stock != null && item.quantity >= stock;
+  };
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -133,7 +138,7 @@ const Cart = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          disabled={item.stock_quantity !== undefined && item.quantity >= item.stock_quantity}
+                          disabled={isAtStockLimit(item)}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
