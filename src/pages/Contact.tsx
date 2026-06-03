@@ -211,11 +211,7 @@ const Contact = () => {
                       Visit our showroom
                     </h3>
                     <p className="text-muted-foreground">
-                      123 Fashion Avenue
-                      <br />
-                      Style District, NY 10001
-                      <br />
-                      United States
+                      Coming soon
                     </p>
                   </div>
                 </div>
@@ -273,7 +269,7 @@ const Contact = () => {
                     What is your return policy?
                   </p>
                   <p className="text-muted-foreground">
-                    30-day returns on all items in original condition.
+                    Clients are only eligible to return a product for replace clothes and no return for jewelry.
                   </p>
                 </div>
                 <div>

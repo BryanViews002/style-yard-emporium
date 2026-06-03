@@ -170,7 +170,7 @@ const ProductDetail = () => {
               </h1>
               <div className="flex items-center gap-4 mb-6">
                 <span className="text-3xl font-light text-primary">
-                  ${product.price}
+                  ₦{product.price}
                 </span>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
@@ -257,7 +257,7 @@ const ProductDetail = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[...Array(10)].map((_, i) => (
+                    {[...Array(product.stock_quantity !== undefined && product.stock_quantity !== null ? Math.max(1, Math.min(10, product.stock_quantity)) : 10)].map((_, i) => (
                       <SelectItem key={i + 1} value={(i + 1).toString()}>
                         {i + 1}
                       </SelectItem>
@@ -296,8 +296,8 @@ const ProductDetail = () => {
               <ul className="space-y-2 text-muted-foreground">
                 <li>• Premium quality materials</li>
                 <li>• Ethically sourced and manufactured</li>
-                <li>• Free shipping on orders over $100</li>
-                <li>• 30-day return policy</li>
+                <li>• Free shipping on orders over ₦100</li>
+                <li>• Clients are only eligible to return a product for replace clothes and no return for jewelry.</li>
                 <li>• Size guide available</li>
               </ul>
             </div>

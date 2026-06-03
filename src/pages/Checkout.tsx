@@ -471,7 +471,7 @@ const Checkout = () => {
                           ` • Color: ${item.selectedColor}`}
                       </p>
                       <p className="text-sm font-medium">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ₦{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -508,12 +508,12 @@ const Checkout = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${getSubtotal().toFixed(2)}</span>
+                  <span>₦{getSubtotal().toFixed(2)}</span>
                 </div>
                 {appliedCoupon && (
                   <div className="flex justify-between text-sm text-accent">
                     <span>Discount</span>
-                    <span>-${getDiscount().toFixed(2)}</span>
+                    <span>-₦{getDiscount().toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
@@ -522,18 +522,18 @@ const Checkout = () => {
                     {selectedShipping?.is_free
                       ? "FREE"
                       : selectedShipping
-                      ? `$${selectedShipping.shipping_cost.toFixed(2)}`
+                      ? `₦${selectedShipping.shipping_cost.toFixed(2)}`
                       : "TBD"}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax</span>
-                  <span>$0.00</span>
+                  <span>₦0.00</span>
                 </div>
                 <Separator className="my-2" />
                 <div className="flex justify-between text-lg font-medium">
                   <span>Total</span>
-                  <span>${getFinalTotal().toFixed(2)}</span>
+                  <span>₦{getFinalTotal().toFixed(2)}</span>
                 </div>
               </div>
             </Card>

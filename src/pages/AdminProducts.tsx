@@ -403,7 +403,7 @@ const AdminProducts = () => {
                 <div>
                   <Label htmlFor="category_id">Category</Label>
                   <Select
-                    value={formData.category_id}
+                    value={formData.category_id || undefined}
                     onValueChange={(value) =>
                       setFormData({ ...formData, category_id: value })
                     }
@@ -488,7 +488,7 @@ const AdminProducts = () => {
                 {product.description}
               </p>
               <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-medium">${product.price}</span>
+                <span className="text-lg font-medium">₦{product.price}</span>
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <Package className="h-4 w-4" />
                   {product.stock_quantity}

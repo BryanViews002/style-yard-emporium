@@ -133,6 +133,7 @@ const Cart = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          disabled={item.stock_quantity !== undefined && item.quantity >= item.stock_quantity}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -140,7 +141,7 @@ const Cart = () => {
                       
                       <div className="flex items-center gap-4">
                         <span className="text-xl font-light text-primary">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ₦{(item.price * item.quantity).toFixed(2)}
                         </span>
                         <Button
                           variant="ghost"
@@ -173,7 +174,7 @@ const Cart = () => {
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>${getTotalPrice().toFixed(2)}</span>
+                <span>₦{getTotalPrice().toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
@@ -181,12 +182,12 @@ const Cart = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tax</span>
-                <span>${(getTotalPrice() * 0.08).toFixed(2)}</span>
+                <span>₦{(getTotalPrice() * 0.08).toFixed(2)}</span>
               </div>
               <div className="border-t border-border/50 pt-4">
                 <div className="flex justify-between text-lg">
                   <span className="font-medium">Total</span>
-                  <span className="font-medium">${(getTotalPrice() * 1.08).toFixed(2)}</span>
+                  <span className="font-medium">₦{(getTotalPrice() * 1.08).toFixed(2)}</span>
                 </div>
               </div>
             </div>

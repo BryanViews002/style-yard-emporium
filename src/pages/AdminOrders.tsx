@@ -248,7 +248,7 @@ const AdminOrders = () => {
                     <TableCell className="font-medium">{order.order_number}</TableCell>
                     <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>{order.email}</TableCell>
-                    <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+                    <TableCell>₦{order.total_amount.toFixed(2)}</TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>
                       {order.tracking_number ? (

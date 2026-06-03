@@ -16,6 +16,7 @@ export interface Product {
   sizes?: string[];
   colors?: string[];
   inStock?: boolean;
+  stock_quantity?: number;
 }
 
 interface ProductCardProps {
@@ -120,7 +121,7 @@ const ProductCard = ({
         </p>
         <div className="flex items-center justify-between">
           <span className="text-xl font-light text-primary">
-            ${product.price}
+            ₦{product.price}
           </span>
           {product.colors && product.colors.length > 0 && (
             <div className="flex gap-1">

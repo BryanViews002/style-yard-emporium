@@ -213,7 +213,7 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  <p className="text-2xl font-light text-primary">${stats.totalRevenue.toFixed(2)}</p>
+                  <p className="text-2xl font-light text-primary">₦{stats.totalRevenue.toFixed(2)}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-accent" />
               </div>
@@ -377,7 +377,7 @@ const AdminDashboard = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-primary">${Number(order.total_amount).toFixed(2)}</p>
+                      <p className="font-medium text-primary">₦{Number(order.total_amount).toFixed(2)}</p>
                       <Badge className={getStatusColor(order.status)}>
                         {order.status}
                       </Badge>

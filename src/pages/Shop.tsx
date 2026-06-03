@@ -67,10 +67,12 @@ const Shop = () => {
       );
     }
 
-    // Filter by category ID
+    // Filter by category ID or name
     if (filters.category !== "all") {
+      const categoryObj = categories.find(c => c.name.toLowerCase() === filters.category.toLowerCase() || c.id === filters.category);
+      const categoryIdToFilter = categoryObj ? categoryObj.id : filters.category;
       result = result.filter(
-        (product) => product.category_id === filters.category
+        (product) => product.category_id === categoryIdToFilter
       );
     }
 
@@ -301,8 +303,8 @@ const Shop = () => {
                   Price Range
                 </label>
                 <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                  <span className="font-medium">${filters.priceRange[0]}</span>
-                  <span className="font-medium">${filters.priceRange[1]}</span>
+                  <span className="font-medium">₦{filters.priceRange[0]}</span>
+                  <span className="font-medium">₦{filters.priceRange[1]}</span>
                 </div>
                 <Slider
                   value={filters.priceRange}
