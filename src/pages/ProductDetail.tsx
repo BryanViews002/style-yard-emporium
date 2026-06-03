@@ -255,7 +255,7 @@ const ProductDetail = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[...Array(product.stock_quantity !== undefined && product.stock_quantity !== null ? Math.max(1, Math.min(10, product.stock_quantity)) : 10)].map((_, i) => (
+                    {[...Array(product.stock_quantity !== undefined && product.stock_quantity !== null ? Math.max(1, Math.min(50, product.stock_quantity)) : 50)].map((_, i) => (
                       <SelectItem key={i + 1} value={(i + 1).toString()}>
                         {i + 1}
                       </SelectItem>

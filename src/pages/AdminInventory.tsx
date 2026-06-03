@@ -35,8 +35,7 @@ const AdminInventory = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
   const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([]);
   const [inventoryHistory, setInventoryHistory] = useState<InventoryMovement[]>([]);
   const [isAdjustmentDialogOpen, setIsAdjustmentDialogOpen] = useState(false);
@@ -48,38 +47,22 @@ const AdminInventory = () => {
   });
 
   useEffect(() => {
-    checkAdminStatus();
+    if (user) {
+      loadInventoryData();
+    }
   }, [user]);
-
-  const checkAdminStatus = async () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (error || !data) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
-    }
-
-    setIsAdmin(true);
-    loadInventoryData();
-  };
 
   const loadInventoryData = async () => {
     try {
+      // Load all products for the dropdown
+      const { data: productsData, error: productsError } = await supabase
+        .from("products")
+        .select("id, name, stock_quantity")
+        .order("name");
+
+      if (productsError) throw productsError;
+      setAllProducts(productsData || []);
+
       // Load low stock products
       const { data: lowStockData, error: lowStockError } = await supabase
         .rpc("get_low_stock_products", { p_threshold: 10 });
@@ -180,10 +163,6 @@ const AdminInventory = () => {
         </div>
       </div>
     );
-  }
-
-  if (!isAdmin) {
-    return null;
   }
 
   return (
@@ -289,16 +268,16 @@ const AdminInventory = () => {
                 <div>
                   <Label htmlFor="product">Product</Label>
                   <Select onValueChange={(value) => {
-                    const product = lowStockProducts.find(p => p.product_id === value);
+                    const product = allProducts.find(p => p.id === value);
                     setSelectedProduct(product);
                   }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a product" />
                     </SelectTrigger>
                     <SelectContent>
-                      {lowStockProducts.map((product) => (
-                        <SelectItem key={product.product_id} value={product.product_id}>
-                          {product.product_name} (Current: {product.current_stock})
+                      {allProducts.map((product) => (
+                        <SelectItem key={product.id} value={product.id}>
+                          {product.name} (Current: {product.stock_quantity})
                         </SelectItem>
                       ))}
                     </SelectContent>

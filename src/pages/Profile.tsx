@@ -47,18 +47,16 @@ const Profile = () => {
     city: "",
     state: "",
     postal_code: "",
-    country: "US",
+    country: "NG",
     phone: "",
     is_default: false,
   });
 
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
+    if (user) {
+      loadProfile();
+      loadAddresses();
     }
-    loadProfile();
-    loadAddresses();
   }, [user]);
 
   const loadProfile = async () => {
@@ -69,6 +67,15 @@ const Profile = () => {
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
+
+    if (error) {
+      toast({
+        title: "Error loading profile",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (data) {
       setProfile({
@@ -87,6 +94,15 @@ const Profile = () => {
       .select("*")
       .eq("user_id", user.id)
       .order("is_default", { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error loading addresses",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (data) {
       setAddresses(data);

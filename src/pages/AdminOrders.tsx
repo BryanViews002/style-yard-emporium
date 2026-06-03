@@ -31,46 +31,15 @@ const AdminOrders = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [trackingForm, setTrackingForm] = useState({ tracking_number: "", tracking_url: "" });
 
   useEffect(() => {
     if (user) {
-      checkAdminStatus();
-    } else {
-      navigate("/auth");
+      loadOrders();
     }
-  }, [user, navigate]);
-
-  const checkAdminStatus = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: user.id,
-        _role: "admin",
-      });
-
-      if (error) throw error;
-
-      if (data) {
-        setIsAdmin(true);
-        loadOrders();
-      } else {
-        navigate("/");
-        toast({
-          title: "Access Denied",
-          description: "You don't have admin privileges.",
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      console.error("Error checking admin status:", error);
-      navigate("/");
-    }
-  };
+  }, [user]);
 
   const loadOrders = async () => {
     try {
@@ -172,23 +141,50 @@ const AdminOrders = () => {
     if (!selectedOrder) return;
 
     try {
+      // Update tracking info and status in DB
       const { error } = await supabase
         .from("orders")
         .update({
           tracking_number: trackingForm.tracking_number,
           tracking_url: trackingForm.tracking_url,
           status: "shipped",
+          updated_at: new Date().toISOString()
         })
         .eq("id", selectedOrder.id);
 
       if (error) throw error;
 
-      // Update status to shipped with tracking info
-      await updateOrderStatus(
-        selectedOrder.id, 
-        "shipped", 
-        `Tracking added: ${trackingForm.tracking_number}`
-      );
+      // Get current order status history to log this change correctly
+      const { data: currentOrder } = await supabase
+        .from("orders")
+        .select("status")
+        .eq("id", selectedOrder.id)
+        .single();
+
+      const oldStatus = currentOrder?.status || "unknown";
+
+      await supabase
+        .from("order_status_history")
+        .insert({
+          order_id: selectedOrder.id,
+          old_status: oldStatus,
+          new_status: "shipped",
+          notes: `Tracking added: ${trackingForm.tracking_number}`,
+          changed_by: user?.id
+        });
+
+      // Send status update notification email
+      try {
+        await supabase.functions.invoke('send-order-status-update', {
+          body: { 
+            orderId: selectedOrder.id,
+            newStatus: "shipped",
+            trackingNumber: trackingForm.tracking_number
+          }
+        });
+      } catch (emailError) {
+        console.error("Failed to invoke email function:", emailError);
+      }
 
       toast({ title: "Tracking information added and order marked as shipped" });
       setTrackingDialogOpen(false);
@@ -218,7 +214,6 @@ const AdminOrders = () => {
     );
   }
 
-  if (!isAdmin) return null;
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -247,7 +242,7 @@ const AdminOrders = () => {
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.order_number}</TableCell>
                     <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>{order.email}</TableCell>
+                    <TableCell>{order.email || "N/A"}</TableCell>
                     <TableCell>₦{order.total_amount.toFixed(2)}</TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>

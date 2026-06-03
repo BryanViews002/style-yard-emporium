@@ -27,7 +27,6 @@ interface RecentOrder {
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
@@ -38,42 +37,10 @@ const AdminDashboard = () => {
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
+    if (user) {
+      loadDashboardData();
     }
-    checkAdminStatus();
-  }, [user, navigate]);
-
-  const checkAdminStatus = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user?.id)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (error || !data) {
-        toast.error("Access Denied", {
-          description: "You don't have admin privileges.",
-        });
-        navigate("/");
-        return;
-      }
-
-      setIsAdmin(true);
-      await loadDashboardData();
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error", {
-        description: "Failed to verify admin status.",
-      });
-      navigate("/");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [user]);
 
   const loadDashboardData = async () => {
     try {
@@ -96,7 +63,7 @@ const AdminDashboard = () => {
       const { data: revenueData } = await supabase
         .from("orders")
         .select("total_amount")
-        .eq("status", "completed");
+        .eq("status", "delivered");
 
       const totalRevenue = revenueData?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
 
@@ -118,6 +85,8 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error("Error loading dashboard data:", error);
       toast.error("Failed to load dashboard data");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,26 +107,6 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="loading-spinner" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center text-destructive">Access Denied</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-muted-foreground mb-4">
-              You don't have admin privileges to access this page.
-            </p>
-            <Button onClick={() => navigate("/")} variant="outline">
-              Go to Home
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     );
   }

@@ -26,6 +26,16 @@ import {
 import ImageUpload from "@/components/ImageUpload";
 import { ImageGalleryUploader } from "@/components/ImageGalleryUploader";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   createProductSlug,
   formatNaira,
   parseListInput,
@@ -62,11 +72,12 @@ const AdminProducts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productImages, setProductImages] = useState<any[]>([]);
 
@@ -87,35 +98,10 @@ const AdminProducts = () => {
   });
 
   useEffect(() => {
-    checkAdminStatus();
+    if (user) {
+      loadData();
+    }
   }, [user]);
-
-  const checkAdminStatus = async () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (error || !data) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
-    }
-
-    setIsAdmin(true);
-    loadData();
-  };
 
   const ensureShopCategories = async () => {
     const { error: upsertError } = await supabase
@@ -148,10 +134,6 @@ const AdminProducts = () => {
     categoryList.find((category) => category.slug === "clothes")?.id ||
     categoryList[0]?.id ||
     "";
-
-  const getCategoryName = (categoryId: string | null) =>
-    categories.find((category) => category.id === categoryId)?.name ||
-    "Uncategorized";
 
   const loadData = async () => {
     try {
@@ -302,7 +284,6 @@ const AdminProducts = () => {
       resetForm();
       loadData();
 
-      // Force refresh the products cache
       window.dispatchEvent(new CustomEvent("productsUpdated"));
     } catch (error: any) {
       toast({
@@ -313,14 +294,14 @@ const AdminProducts = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  const handleDelete = async () => {
+    if (!productToDelete) return;
 
     try {
       const { error } = await supabase
         .from("products")
         .update({ is_active: false })
-        .eq("id", id);
+        .eq("id", productToDelete);
 
       if (error) throw error;
 
@@ -329,29 +310,6 @@ const AdminProducts = () => {
       window.dispatchEvent(new CustomEvent("productsUpdated"));
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
-
-  return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-light tracking-wider text-primary">
             Product Management
           </h1>
@@ -607,23 +565,53 @@ const AdminProducts = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => handleEdit(product)}
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Package className="h-4 w-4" />
+                  {product.stock_quantity}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEdit(product)}
                   className="flex-1"
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit
                 </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleDelete(product.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setProductToDelete(product.id);
+                        setIsDeleteOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
               </div>
             </Card>
           ))}
         </div>
       </div>
+
+      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will mark the product as inactive and hide it from the store. This action can be reversed by an administrator.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProductToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

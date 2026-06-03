@@ -123,8 +123,17 @@ const Shop = () => {
     indexOfLastProduct,
     filteredProducts.length
   );
-  const pageButtonCount =
-    typeof window !== "undefined" && window.innerWidth < 640 ? 3 : 5;
+  const isMobile = typeof window !== "undefined" ? window.innerWidth < 640 : false;
+  // A simple re-eval on resize could be added, but for now we'll rely on the existing logic
+  // or use an effect. Let's use a resize event listener.
+  const [pageButtonCount, setPageButtonCount] = useState(isMobile ? 3 : 5);
+
+  useEffect(() => {
+    const handleResize = () => setPageButtonCount(window.innerWidth < 640 ? 3 : 5);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const categoryTitle =
     category === "all" ? "Shop Our Collection" : `${getCategoryLabel(category)} Collection`;
 

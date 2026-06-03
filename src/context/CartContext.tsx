@@ -10,8 +10,8 @@ interface CartItem extends Product {
 interface CartContextType {
   items: CartItem[];
   addToCart: (product: Product, quantity?: number, size?: string, color?: string) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string, size?: string, color?: string) => void;
+  updateQuantity: (productId: string, quantity: number, size?: string, color?: string) => void;
   clearCart: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
@@ -41,19 +41,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== productId));
+  const removeFromCart = (productId: string, size?: string, color?: string) => {
+    setItems(prevItems => prevItems.filter(item => 
+      !(item.id === productId && item.selectedSize === size && item.selectedColor === color)
+    ));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, size?: string, color?: string) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, size, color);
       return;
     }
 
     setItems(prevItems =>
       prevItems.map(item => {
-        if (item.id === productId) {
+        if (item.id === productId && item.selectedSize === size && item.selectedColor === color) {
           const newQuantity = item.stock_quantity != null ? Math.min(quantity, item.stock_quantity) : quantity;
           return { ...item, quantity: newQuantity };
         }

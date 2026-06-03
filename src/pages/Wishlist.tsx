@@ -8,6 +8,17 @@ import { Heart, ShoppingBag, Trash2, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatNaira } from '@/lib/catalog';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface WishlistItem {
   id: string;
@@ -24,17 +35,43 @@ const Wishlist = () => {
   const { wishlist, isLoading, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const [isClearDialogOpen, setIsClearDialogOpen] = React.useState(false);
 
-  const handleAddToCart = (item: WishlistItem) => {
+  const handleAddToCart = async (item: WishlistItem) => {
     try {
+      const { data: dbProduct, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', item.product_id)
+        .single();
+
+      if (error) throw error;
+
+      if (dbProduct.stock_quantity !== null && dbProduct.stock_quantity <= 0) {
+        toast({
+          title: "Out of Stock",
+          description: "This item is currently out of stock.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Convert wishlist item to Product format for cart
       const product = {
         id: item.product_id,
         name: item.product_name,
         price: item.product_price,
         image: item.product_image,
-        category: '', // Not available in wishlist data
-        description: '',
+        category: dbProduct.category_id || '',
+        description: dbProduct.description || '',
+        stock_quantity: dbProduct.stock_quantity,
+        is_featured: dbProduct.is_featured,
+        inStock: dbProduct.stock_quantity == null || dbProduct.stock_quantity > 0,
+        slug: dbProduct.slug,
+        sku: dbProduct.sku,
+        brand: dbProduct.brand,
+        sizes: dbProduct.size_options || [],
+        colors: dbProduct.color_options || [],
       };
       
       addToCart(product, 1);
@@ -53,11 +90,13 @@ const Wishlist = () => {
   };
 
   const handleClearWishlist = async () => {
+    setIsClearDialogOpen(true);
+  };
+
+  const confirmClearWishlist = async () => {
     if (wishlist.length === 0) return;
-    
-    if (window.confirm('Are you sure you want to clear your entire wishlist?')) {
-      await clearWishlist();
-    }
+    await clearWishlist();
+    setIsClearDialogOpen(false);
   };
 
   if (isLoading) {
@@ -199,6 +238,23 @@ const Wishlist = () => {
           </div>
         )}
       </div>
+
+      <AlertDialog open={isClearDialogOpen} onOpenChange={setIsClearDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear Wishlist?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to clear your entire wishlist? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmClearWishlist} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Clear All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

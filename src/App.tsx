@@ -27,6 +27,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminCategories from "./pages/AdminCategories";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminCoupons from "./pages/AdminCoupons";
+import AdminBundles from "./pages/AdminBundles";
 import AdminInventory from "./pages/AdminInventory";
 import Orders from "./pages/Orders";
 import Wishlist from "./pages/Wishlist";
@@ -168,6 +169,14 @@ const AppContent = () => {
           element={
             <ProtectedRoute requireAdmin>
               <AdminInventory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/bundles"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminBundles />
             </ProtectedRoute>
           }
         />

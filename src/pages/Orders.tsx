@@ -47,15 +47,14 @@ const Orders = () => {
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(
     null
   );
+  const [isCancelling, setIsCancelling] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-    } else {
+    if (user) {
       loadOrders();
     }
-  }, [user, navigate]);
+  }, [user]);
 
   const loadOrders = async () => {
     if (!user) return;
@@ -97,6 +96,7 @@ const Orders = () => {
   };
 
   const handleCancelOrder = async (orderId: string) => {
+    setIsCancelling(true);
     try {
       const { error } = await supabase
         .from("orders")
@@ -114,6 +114,7 @@ const Orders = () => {
         variant: "destructive",
       });
     } finally {
+      setIsCancelling(false);
       setCancellingOrderId(null);
     }
   };
@@ -184,12 +185,23 @@ const Orders = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Keep Order</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() =>
-                cancellingOrderId && handleCancelOrder(cancellingOrderId)
-              }
+              onClick={(e) => {
+                e.preventDefault();
+                if (cancellingOrderId && !isCancelling) {
+                  handleCancelOrder(cancellingOrderId);
+                }
+              }}
+              disabled={isCancelling}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Cancel Order
+              {isCancelling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                "Cancel Order"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

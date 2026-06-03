@@ -43,7 +43,7 @@ export const CouponInput = ({
         onCouponApplied(result.coupon_id, result.discount_amount);
         toast({
           title: "Coupon applied!",
-          description: `You saved $${result.discount_amount.toFixed(2)}`,
+          description: `You saved ₦${result.discount_amount.toFixed(2)}`,
         });
         setCouponCode("");
       } else {
@@ -73,7 +73,7 @@ export const CouponInput = ({
           <div>
             <p className="text-sm font-medium">{appliedCoupon.code}</p>
             <p className="text-xs text-muted-foreground">
-              -${appliedCoupon.discount.toFixed(2)}
+              -₦{appliedCoupon.discount.toFixed(2)}
             </p>
           </div>
         </div>
