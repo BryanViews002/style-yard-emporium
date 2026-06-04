@@ -84,14 +84,14 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 4%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
@@ -128,11 +128,20 @@
   }
 
   body {
-    @apply bg-background text-foreground font-light;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
   }
 }
 
 @layer components {
+  /* Glassmorphism */
+  .glass-panel {
+    @apply bg-background/70 backdrop-blur-md border-b border-border/50 shadow-sm supports-[backdrop-filter]:bg-background/60;
+  }
+
   /* Loading Animation */
   .loading-spinner {
     @apply inline-block w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin;

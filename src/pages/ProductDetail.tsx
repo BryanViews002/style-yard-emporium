@@ -131,14 +131,14 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-16 md:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
-        <div className="mb-8">
+        <div className="mb-12">
           <Link to="/shop">
             <Button
               variant="ghost"
-              className="text-muted-foreground hover:text-primary"
+              className="text-muted-foreground hover:text-primary pl-0"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Shop
@@ -146,7 +146,7 @@ const ProductDetail = () => {
           </Link>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid lg:grid-cols-2 gap-16">
           {/* Product Images */}
           <div className="space-y-6">
             <ProductImageGallery
@@ -160,10 +160,10 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-8">
             <div>
-              <p className="text-muted-foreground text-sm uppercase tracking-wider mb-2">
+              <p className="text-muted-foreground text-sm uppercase tracking-widest font-medium mb-3">
                 {product.category}
               </p>
-              <h1 className="text-4xl md:text-5xl font-light tracking-wider text-primary mb-4">
+              <h1 className="text-4xl md:text-5xl font-heading font-medium tracking-tight text-primary mb-6">
                 {product.name}
               </h1>
               <div className="flex items-center gap-4 mb-6">

@@ -74,26 +74,21 @@ const ProductCard = ({
         </Link>
         
         {/* Overlay Actions */}
-        <div className={`pointer-events-none absolute inset-0 bg-primary/20 flex items-center justify-center gap-2 transition-opacity duration-300 ${
-          isHovered ? "opacity-100" : "opacity-0"
-        }`}>
+        <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end justify-center gap-2 transition-all duration-300 ease-out translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 z-10">
           <Button
             size="sm"
-            className="btn-hero pointer-events-auto"
-            onClick={() => onAddToCart?.(product)}
+            className="flex-1 bg-white text-black hover:bg-gray-100 font-medium tracking-wide shadow-xl"
+            onClick={(e) => { e.preventDefault(); onAddToCart?.(product); }}
           >
             <ShoppingBag className="h-4 w-4 mr-2" />
-            Add to Cart
+            Quick Add
           </Button>
           <Button
-            size="sm"
-            variant="outline"
-            onClick={toggleWishlist}
+            size="icon"
+            variant="secondary"
+            onClick={(e) => { e.preventDefault(); toggleWishlist(); }}
             disabled={isTogglingWishlist}
-            aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
-            className={`pointer-events-auto ${
-              isFavorite ? "bg-accent text-accent-foreground" : ""
-            }`}
+            className={`shadow-xl shrink-0 ${isFavorite ? "text-red-500" : "text-black"} bg-white hover:bg-gray-100`}
           >
             <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
           </Button>
@@ -115,23 +110,25 @@ const ProductCard = ({
       </div>
 
       {/* Product Info */}
-      <div className="p-4 space-y-2">
-        <h3 className="font-light text-lg text-foreground">
-          {product.name}
-        </h3>
-        <p className="text-muted-foreground text-sm font-light capitalize">
-          {product.category}
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-xl font-light text-primary">
+      <div className="p-4 space-y-1">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className="font-heading font-medium text-base text-foreground truncate">
+            {product.name}
+          </h3>
+          <span className="font-medium text-primary whitespace-nowrap text-base">
             {formatNaira(product.price)}
           </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground text-sm font-sans capitalize tracking-wide">
+            {product.category}
+          </p>
           {product.colors && product.colors.length > 0 && (
-            <div className="flex gap-1">
+            <div className="flex gap-1.5 items-center">
               {product.colors.slice(0, 3).map((color, index) => (
                 <div 
                   key={index}
-                  className="w-4 h-4 rounded-full border border-border/50"
+                  className="w-3.5 h-3.5 rounded-full border border-border shadow-sm"
                   style={{ backgroundColor: color }}
                   title={color}
                 />

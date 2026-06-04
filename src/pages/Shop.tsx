@@ -158,22 +158,22 @@ const Shop = () => {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 md:mb-12 text-center">
-          <div className="inline-block mb-3 md:mb-4">
+        <div className="mb-12 md:mb-16 text-center">
+          <div className="inline-block mb-4 md:mb-6">
             <Badge
               variant="outline"
-              className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-light tracking-wider"
+              className="px-4 py-2 text-xs md:text-sm font-medium tracking-widest uppercase bg-transparent border-primary/20 text-primary"
             >
-              <Star className="h-3 w-3 mr-1.5 md:mr-2 inline" />
+              <Star className="h-3 w-3 mr-2 inline" />
               Premium Collection
             </Badge>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-wider text-primary mb-3 md:mb-4 px-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-medium tracking-tight text-primary mb-4 md:mb-6 px-4">
             {categoryTitle}
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg font-light max-w-2xl mx-auto px-4">
+          <p className="text-muted-foreground text-lg md:text-xl font-sans max-w-2xl mx-auto px-4">
             Discover our carefully curated selection of luxury fashion and
             jewelry.
           </p>

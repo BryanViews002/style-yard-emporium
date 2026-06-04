@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { ShoppingBag, Menu, X, Search, User, LogOut, Shield, Heart, UserCircle, BarChart, FolderTree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,7 +42,7 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
   };
 
   return (
-    <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50">
+    <nav className="sticky top-0 z-40 glass-panel">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -63,13 +64,21 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
               <Link
                 key={item.label}
                 to={item.href}
-                className={`text-sm font-light tracking-wide transition-colors duration-300 ${
+                className={`relative px-1 py-2 text-sm font-light tracking-wide transition-colors duration-300 ${
                   isActive(item)
-                    ? "text-accent border-b border-accent"
+                    ? "text-primary"
                     : "text-muted-foreground hover:text-primary"
                 }`}
               >
                 {item.label}
+                {isActive(item) && (
+                  <motion.div
+                    layoutId="nav-underline"
+                    className="absolute bottom-0 left-0 right-0 h-px bg-primary"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
               </Link>
             ))}
           </div>
