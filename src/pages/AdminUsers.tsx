@@ -57,13 +57,9 @@ const AdminUsers = () => {
   const loadUsers = async () => {
     try {
       // Call edge function to get users with emails
+      // Note: supabase.functions.invoke() automatically attaches the user's JWT
       const { data: functionData, error: functionError } = await supabase.functions.invoke(
-        "get-admin-users",
-        {
-          headers: {
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          },
-        }
+        "get-admin-users"
       );
 
       if (functionError) throw functionError;

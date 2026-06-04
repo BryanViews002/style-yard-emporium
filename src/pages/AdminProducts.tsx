@@ -310,6 +310,24 @@ const AdminProducts = () => {
       window.dispatchEvent(new CustomEvent("productsUpdated"));
     } catch (error: any) {
       toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteOpen(false);
+      setProductToDelete(null);
+    }
+  };
+
+  if (!isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-light tracking-wider text-primary">
             Product Management
           </h1>
@@ -555,16 +573,6 @@ const AdminProducts = () => {
                 <span className="text-lg font-medium">
                   {formatNaira(product.price)}
                 </span>
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Package className="h-4 w-4" />
-                  {product.stock_quantity}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleEdit(product)}
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <Package className="h-4 w-4" />
                   {product.stock_quantity}
