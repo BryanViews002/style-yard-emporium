@@ -53,17 +53,17 @@ const Hero = () => {
                 </Button>
               </Link>
               <Link to="/shop?category=jewelry">
-                <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white hover:text-primary backdrop-blur-sm">
+                <Button size="lg" variant="outline" className="border-premium-gold/60 text-premium-gold hover:bg-premium-gold hover:text-primary backdrop-blur-sm">
                   Jewelry
                 </Button>
               </Link>
               <Link to="/shop?category=bags">
-                <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white hover:text-primary backdrop-blur-sm">
+                <Button size="lg" variant="outline" className="border-premium-gold/60 text-premium-gold hover:bg-premium-gold hover:text-primary backdrop-blur-sm">
                   Bags
                 </Button>
               </Link>
               <Link to="/shop?category=perfumes">
-                <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white hover:text-primary backdrop-blur-sm">
+                <Button size="lg" variant="outline" className="border-premium-gold/60 text-premium-gold hover:bg-premium-gold hover:text-primary backdrop-blur-sm">
                   Perfumes
                 </Button>
               </Link>
