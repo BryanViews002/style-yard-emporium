@@ -18,6 +18,8 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
     { label: "Home", href: "/" },
     { label: "Clothes", href: "/shop?category=clothes", category: "clothes" },
     { label: "Jewelry", href: "/shop?category=jewelry", category: "jewelry" },
+    { label: "Bags", href: "/shop?category=bags", category: "bags" },
+    { label: "Perfumes", href: "/shop?category=perfumes", category: "perfumes" },
     { label: "Contact", href: "/contact" },
   ];
 
@@ -51,6 +53,8 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
               src="/IMG_4121.png" 
               alt="The Style Yard Logo" 
               className="h-10 w-10 object-cover rounded-full"
+              loading="eager"
+              fetchPriority="high"
             />
             <div className="text-2xl font-light tracking-wider">
               <span className="text-primary">THE STYLE</span>

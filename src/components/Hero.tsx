@@ -1,17 +1,32 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroBanner from "@/assets/hero-banner.jpg";
 
 const Hero = () => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+      {/* Background Image with blur-up placeholder */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={heroBanner} 
-          alt="The Style Yard Fashion Collection" 
-          className="w-full h-full object-cover"
+        {/* Low-quality placeholder while full image loads */}
+        <div
+          className={`absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 transition-opacity duration-700 ${
+            imageLoaded ? "opacity-0" : "opacity-100"
+          }`}
+        />
+        <img
+          src={heroBanner}
+          alt="The Style Yard Fashion Collection"
+          className={`w-full h-full object-cover transition-opacity duration-700 ${
+            imageLoaded ? "opacity-100" : "opacity-0"
+          }`}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          onLoad={() => setImageLoaded(true)}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-hero-bg/80 via-hero-bg/40 to-transparent"></div>
       </div>
@@ -27,19 +42,29 @@ const Hero = () => {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-hero-text/80 mb-8 font-light leading-relaxed">
-              Discover our curated collection of contemporary fashion and luxury jewelry, 
-              crafted for the modern aesthetic.
+              Discover our curated collection of contemporary fashion, luxury jewelry, 
+              premium bags and exquisite fragrances.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-wrap gap-4">
               <Link to="/shop?category=clothes">
                 <Button size="lg" className="btn-hero group">
-                  Shop Clothes
+                  Clothes
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link to="/shop?category=jewelry">
-                <Button size="lg" variant="outline" className="btn-gold border-white text-white hover:bg-white hover:text-primary">
-                  Explore Jewelry
+                <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white hover:text-primary backdrop-blur-sm">
+                  Jewelry
+                </Button>
+              </Link>
+              <Link to="/shop?category=bags">
+                <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white hover:text-primary backdrop-blur-sm">
+                  Bags
+                </Button>
+              </Link>
+              <Link to="/shop?category=perfumes">
+                <Button size="lg" variant="outline" className="border-white/60 text-white hover:bg-white hover:text-primary backdrop-blur-sm">
+                  Perfumes
                 </Button>
               </Link>
             </div>
@@ -58,3 +83,4 @@ const Hero = () => {
 };
 
 export default Hero;
+

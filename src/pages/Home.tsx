@@ -28,25 +28,26 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Clothes Category */}
             <Link
               to="/shop?category=clothes"
               className="group relative overflow-hidden rounded-lg luxury-hover"
             >
               <div className="aspect-[4/3] bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
-                <div className="text-center">
-                  <h3 className="text-3xl font-light tracking-wider text-primary mb-4">
+                <div className="text-center px-4">
+                  <h3 className="text-2xl font-light tracking-wider text-primary mb-3">
                     CLOTHES
                   </h3>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-muted-foreground text-sm mb-5">
                     Contemporary fashion for every occasion
                   </p>
                   <Button
                     variant="outline"
+                    size="sm"
                     className="group-hover:bg-primary group-hover:text-primary-foreground"
                   >
-                    Shop Clothes
+                    Shop Now
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -59,18 +60,69 @@ const Home = () => {
               className="group relative overflow-hidden rounded-lg luxury-hover"
             >
               <div className="aspect-[4/3] bg-gradient-to-br from-soft-rose to-luxury-rose/30 flex items-center justify-center">
-                <div className="text-center">
-                  <h3 className="text-3xl font-light tracking-wider text-primary mb-4">
+                <div className="text-center px-4">
+                  <h3 className="text-2xl font-light tracking-wider text-primary mb-3">
                     JEWELRY
                   </h3>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-muted-foreground text-sm mb-5">
                     Exquisite pieces crafted with precision
                   </p>
                   <Button
                     variant="outline"
-                    className="btn-gold group-hover:bg-premium-gold group-hover:text-primary"
+                    size="sm"
+                    className="group-hover:bg-primary group-hover:text-primary-foreground"
                   >
-                    Shop Jewelry
+                    Shop Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </Link>
+
+            {/* Bags Category */}
+            <Link
+              to="/shop?category=bags"
+              className="group relative overflow-hidden rounded-lg luxury-hover"
+            >
+              <div className="aspect-[4/3] bg-gradient-to-br from-amber-50 to-amber-100/60 flex items-center justify-center">
+                <div className="text-center px-4">
+                  <h3 className="text-2xl font-light tracking-wider text-primary mb-3">
+                    BAGS
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-5">
+                    Premium bags for every style
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="group-hover:bg-primary group-hover:text-primary-foreground"
+                  >
+                    Shop Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </Link>
+
+            {/* Perfumes Category */}
+            <Link
+              to="/shop?category=perfumes"
+              className="group relative overflow-hidden rounded-lg luxury-hover"
+            >
+              <div className="aspect-[4/3] bg-gradient-to-br from-purple-50 to-purple-100/60 flex items-center justify-center">
+                <div className="text-center px-4">
+                  <h3 className="text-2xl font-light tracking-wider text-primary mb-3">
+                    PERFUMES
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-5">
+                    Luxury fragrances for every mood
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="group-hover:bg-primary group-hover:text-primary-foreground"
+                  >
+                    Shop Now
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>

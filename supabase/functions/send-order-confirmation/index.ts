@@ -23,6 +23,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch order details
@@ -46,82 +47,48 @@ serve(async (req) => {
       );
     }
 
-    console.log('Order confirmation prepared for:', order.email);
-    console.log('Order number:', order.order_number);
-
-    // Send email using Resend
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    
-    if (resendApiKey) {
-      try {
-        const emailResponse = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'The Style Yard <onboarding@resend.dev>',
-            to: [order.email],
-            subject: `Order Confirmation - ${order.order_number}`,
-            html: generateOrderConfirmationEmail(order),
-          }),
-        });
-
-        if (emailResponse.ok) {
-          const emailData = await emailResponse.json();
-          console.log('Email sent successfully:', emailData.id);
-          
-          return new Response(
-            JSON.stringify({ 
-              success: true, 
-              message: 'Order confirmation email sent successfully',
-              emailId: emailData.id,
-              order: {
-                number: order.order_number,
-                email: order.email,
-                total: order.total_amount
-              }
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        } else {
-          const errorData = await emailResponse.json();
-          console.error('Email sending failed:', errorData);
-          throw new Error('Failed to send email');
-        }
-      } catch (emailError) {
-        console.error('Email error:', emailError);
-        // Fall back to logging if email fails
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: 'Order confirmation logged (email service unavailable)',
-            order: {
-              number: order.order_number,
-              email: order.email,
-              total: order.total_amount
-            }
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    } else {
-      console.log('RESEND_API_KEY not configured, logging order confirmation');
-      
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not configured');
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Order confirmation logged (email service not configured)',
-          order: {
-            number: order.order_number,
-            email: order.email,
-            total: order.total_amount
-          }
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Email service not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'The Style Yard <noreply@thestyleyard.store>',
+        to: [order.email],
+        subject: `Order Confirmed ✓ — ${order.order_number}`,
+        html: generateOrderConfirmationEmail(order),
+      }),
+    });
+
+    const emailData = await emailResponse.json();
+
+    if (!emailResponse.ok) {
+      console.error('Resend error:', emailData);
+      return new Response(
+        JSON.stringify({ error: 'Failed to send email', details: emailData }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Order confirmation email sent:', emailData.id);
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Order confirmation email sent',
+        emailId: emailData.id,
+        order: { number: order.order_number, email: order.email, total: order.total_amount }
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error in send-order-confirmation:', error);
     return new Response(
@@ -131,97 +98,141 @@ serve(async (req) => {
   }
 });
 
+function formatNaira(amount: number): string {
+  return `₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 function generateOrderConfirmationEmail(order: any): string {
   const itemsHtml = order.order_items?.map((item: any) => `
     <tr>
-      <td style="padding: 10px; border-bottom: 1px solid #eee;">
-        <img src="${item.product_snapshot.image}" alt="${item.product_snapshot.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+      <td style="padding: 16px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle;">
+        <img src="${item.product_snapshot?.image || ''}" alt="${item.product_snapshot?.name || ''}" 
+          style="width: 64px; height: 64px; object-fit: cover; border-radius: 8px; display: block;">
       </td>
-      <td style="padding: 10px; border-bottom: 1px solid #eee;">
-        <strong>${item.product_snapshot.name}</strong>
-        ${item.product_snapshot.selectedSize ? `<br><small>Size: ${item.product_snapshot.selectedSize}</small>` : ''}
-        ${item.product_snapshot.selectedColor ? `<br><small>Color: ${item.product_snapshot.selectedColor}</small>` : ''}
+      <td style="padding: 16px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle;">
+        <p style="margin: 0; font-weight: 600; color: #1a1a1a; font-size: 14px;">${item.product_snapshot?.name || 'Product'}</p>
+        ${item.product_snapshot?.selectedSize ? `<p style="margin: 4px 0 0; color: #888; font-size: 12px;">Size: ${item.product_snapshot.selectedSize}</p>` : ''}
+        ${item.product_snapshot?.selectedColor ? `<p style="margin: 4px 0 0; color: #888; font-size: 12px;">Color: ${item.product_snapshot.selectedColor}</p>` : ''}
+        <p style="margin: 4px 0 0; color: #888; font-size: 12px;">Qty: ${item.quantity}</p>
       </td>
-      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$${item.unit_price.toFixed(2)}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$${item.total_price.toFixed(2)}</td>
+      <td style="padding: 16px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; text-align: right; font-weight: 600; color: #1a1a1a; font-size: 14px;">
+        ${formatNaira(item.total_price)}
+      </td>
     </tr>
   `).join('') || '';
 
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Order Confirmation - ${order.order_number}</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 20px; }
-        .order-details { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 10px; text-align: left; }
-        th { background: #f8f9fa; font-weight: bold; }
-        .total { font-size: 18px; font-weight: bold; color: #2c3e50; }
-        .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>The Style Yard</h1>
-          <h2>Order Confirmation</h2>
-        </div>
-        
-        <div class="order-details">
-          <h3>Thank you for your order!</h3>
-          <p>Your order <strong>${order.order_number}</strong> has been confirmed and is being processed.</p>
+  const addr = order.shipping_address || {};
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed — ${order.order_number}</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f6f6;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f6;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.07);max-width:600px;width:100%;">
           
-          <h4>Order Details:</h4>
-          <p><strong>Order Number:</strong> ${order.order_number}</p>
-          <p><strong>Order Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
-          <p><strong>Email:</strong> ${order.email}</p>
-          
-          <h4>Shipping Address:</h4>
-          <p>
-            ${order.shipping_address.first_name} ${order.shipping_address.last_name}<br>
-            ${order.shipping_address.address_line_1}<br>
-            ${order.shipping_address.address_line_2 ? order.shipping_address.address_line_2 + '<br>' : ''}
-            ${order.shipping_address.city}, ${order.shipping_address.state} ${order.shipping_address.postal_code}<br>
-            ${order.shipping_address.country}
-          </p>
-        </div>
-        
-        <h4>Order Items:</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Product</th>
-              <th>Quantity</th>
-              <th>Unit Price</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsHtml}
-          </tbody>
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);padding:40px 40px 32px;text-align:center;">
+              <h1 style="margin:0;color:#d4af37;font-size:28px;font-weight:300;letter-spacing:4px;text-transform:uppercase;">THE STYLE YARD</h1>
+              <p style="margin:12px 0 0;color:rgba(255,255,255,0.6);font-size:13px;letter-spacing:1px;text-transform:uppercase;">Order Confirmation</p>
+            </td>
+          </tr>
+
+          <!-- Success Banner -->
+          <tr>
+            <td style="background:#f0fdf4;padding:28px 40px;text-align:center;border-bottom:1px solid #dcfce7;">
+              <div style="display:inline-block;background:#22c55e;border-radius:50%;width:48px;height:48px;line-height:48px;text-align:center;font-size:22px;margin-bottom:12px;">✓</div>
+              <h2 style="margin:0;color:#15803d;font-size:20px;font-weight:600;">Order Confirmed!</h2>
+              <p style="margin:8px 0 0;color:#166534;font-size:14px;">Thank you for your purchase. We're getting your order ready.</p>
+            </td>
+          </tr>
+
+          <!-- Order Info -->
+          <tr>
+            <td style="padding:32px 40px;border-bottom:1px solid #f0f0f0;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="width:50%;">
+                    <p style="margin:0;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Order Number</p>
+                    <p style="margin:6px 0 0;color:#1a1a1a;font-size:15px;font-weight:700;">${order.order_number}</p>
+                  </td>
+                  <td style="width:50%;text-align:right;">
+                    <p style="margin:0;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Date</p>
+                    <p style="margin:6px 0 0;color:#1a1a1a;font-size:15px;font-weight:600;">${new Date(order.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Items -->
+          <tr>
+            <td style="padding:32px 40px 0;">
+              <h3 style="margin:0 0 16px;color:#1a1a1a;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Your Items</h3>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${itemsHtml}
+              </table>
+            </td>
+          </tr>
+
+          <!-- Totals -->
+          <tr>
+            <td style="padding:24px 40px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:4px 0;color:#666;font-size:14px;">Subtotal</td>
+                  <td style="padding:4px 0;text-align:right;color:#666;font-size:14px;">${formatNaira(order.subtotal || 0)}</td>
+                </tr>
+                ${order.discount_amount > 0 ? `
+                <tr>
+                  <td style="padding:4px 0;color:#22c55e;font-size:14px;">Discount</td>
+                  <td style="padding:4px 0;text-align:right;color:#22c55e;font-size:14px;">-${formatNaira(order.discount_amount)}</td>
+                </tr>` : ''}
+                <tr>
+                  <td style="padding:4px 0;color:#666;font-size:14px;">Shipping</td>
+                  <td style="padding:4px 0;text-align:right;color:#666;font-size:14px;">${order.shipping_amount > 0 ? formatNaira(order.shipping_amount) : 'FREE'}</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 0 4px;border-top:2px solid #1a1a1a;color:#1a1a1a;font-size:16px;font-weight:700;">Total</td>
+                  <td style="padding:16px 0 4px;border-top:2px solid #1a1a1a;text-align:right;color:#1a1a1a;font-size:18px;font-weight:700;">${formatNaira(order.total_amount)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Shipping Address -->
+          <tr>
+            <td style="padding:0 40px 32px;">
+              <div style="background:#f8f8f8;border-radius:12px;padding:20px;">
+                <p style="margin:0 0 8px;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Shipping To</p>
+                <p style="margin:0;color:#1a1a1a;font-size:14px;line-height:1.6;">
+                  ${addr.first_name || ''} ${addr.last_name || ''}<br>
+                  ${addr.address_line_1 || ''}${addr.address_line_2 ? '<br>' + addr.address_line_2 : ''}<br>
+                  ${addr.city || ''}, ${addr.state || ''} ${addr.postal_code || ''}<br>
+                  ${addr.country || ''}
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#1a1a1a;padding:28px 40px;text-align:center;">
+              <p style="margin:0;color:rgba(255,255,255,0.5);font-size:12px;">Questions? Contact us anytime.</p>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.3);font-size:11px;">© ${new Date().getFullYear()} The Style Yard. All rights reserved.</p>
+            </td>
+          </tr>
+
         </table>
-        
-        <div style="text-align: right; margin-top: 20px;">
-          <p><strong>Subtotal:</strong> $${order.subtotal.toFixed(2)}</p>
-          ${order.discount_amount > 0 ? `<p><strong>Discount:</strong> -$${order.discount_amount.toFixed(2)}</p>` : ''}
-          <p><strong>Shipping:</strong> $${order.shipping_amount.toFixed(2)}</p>
-          <p><strong>Tax:</strong> $${order.tax_amount.toFixed(2)}</p>
-          <p class="total"><strong>Total:</strong> $${order.total_amount.toFixed(2)}</p>
-        </div>
-        
-        <div class="footer">
-          <p>If you have any questions about your order, please contact us.</p>
-          <p>Thank you for choosing The Style Yard!</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }

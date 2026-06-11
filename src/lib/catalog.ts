@@ -9,6 +9,16 @@ export const SHOP_CATEGORIES = [
     slug: "jewelry",
     description: "Jewelry collection",
   },
+  {
+    name: "Bags",
+    slug: "bags",
+    description: "Premium bags and accessories",
+  },
+  {
+    name: "Perfumes",
+    slug: "perfumes",
+    description: "Luxury fragrances and perfumes",
+  },
 ] as const;
 
 export type ShopCategorySlug = (typeof SHOP_CATEGORIES)[number]["slug"];
@@ -69,6 +79,21 @@ const CATEGORY_ALIASES: Record<string, ShopCategoryFilter> = {
   jewerky: "jewelry",
   jewels: "jewelry",
   accessories: "jewelry",
+  bags: "bags",
+  bag: "bags",
+  handbag: "bags",
+  handbags: "bags",
+  purse: "bags",
+  purses: "bags",
+  tote: "bags",
+  totes: "bags",
+  perfumes: "perfumes",
+  perfume: "perfumes",
+  fragrance: "perfumes",
+  fragrances: "perfumes",
+  scent: "perfumes",
+  scents: "perfumes",
+  cologne: "perfumes",
 };
 
 export const slugify = (value: string) =>
