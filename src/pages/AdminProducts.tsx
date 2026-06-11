@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,7 @@ const SIZE_PRESETS = ["One Size", "XS", "S", "M", "L", "XL", "XXL"];
 
 const AdminProducts = () => {
   const { user } = useAuth();
+  const { isAdmin } = useAdminCheck();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
