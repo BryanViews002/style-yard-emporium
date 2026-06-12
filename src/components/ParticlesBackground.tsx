@@ -18,72 +18,59 @@ export const ParticlesBackground = () => {
   return (
     <Particles
       id="tsparticles"
-      className="absolute inset-0 -z-10"
+      className="fixed inset-0 -z-10 pointer-events-none"
       options={{
-        background: {
-          color: {
-            value: "transparent",
-          },
-        },
-        fpsLimit: 120,
+        background: { color: { value: "transparent" } },
+        fpsLimit: 60,
         interactivity: {
           events: {
-            onClick: {
-              enable: true,
-              mode: "push",
-            },
-            onHover: {
-              enable: true,
-              mode: "grab",
-            },
+            onHover: { enable: true, mode: "grab" },
+            onClick: { enable: true, mode: "repulse" },
           },
           modes: {
-            push: {
-              quantity: 4,
-            },
             grab: {
-              distance: 140,
-              links: {
-                opacity: 0.5,
-              },
+              distance: 180,
+              links: { opacity: 0.4 },
+            },
+            repulse: {
+              distance: 200,
+              duration: 0.8,
             },
           },
         },
         particles: {
-          color: {
-            value: "#d4af37", // premium-gold
-          },
+          color: { value: "#D4AF37" },
           links: {
-            color: "#d4af37",
-            distance: 150,
+            color: "#D4AF37",
+            distance: 160,
             enable: true,
-            opacity: 0.15,
-            width: 1,
+            opacity: 0.07,
+            width: 0.8,
           },
           move: {
-            direction: "none",
             enable: true,
-            outModes: {
-              default: "bounce",
-            },
-            random: false,
-            speed: 0.8,
+            direction: "none",
+            outModes: { default: "bounce" },
+            random: true,
+            speed: 0.5,
             straight: false,
+            attract: { enable: true, rotate: { x: 600, y: 1200 } },
           },
           number: {
-            density: {
-              enable: true,
-            },
-            value: 60,
+            density: { enable: true },
+            value: 50,
           },
           opacity: {
-            value: 0.3,
+            value: { min: 0.1, max: 0.4 },
+            animation: {
+              enable: true,
+              speed: 0.6,
+              sync: false,
+            },
           },
-          shape: {
-            type: "circle",
-          },
+          shape: { type: "circle" },
           size: {
-            value: { min: 1, max: 3 },
+            value: { min: 0.5, max: 2 },
           },
         },
         detectRetina: true,
