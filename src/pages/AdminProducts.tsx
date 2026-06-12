@@ -137,6 +137,12 @@ const AdminProducts = () => {
     categoryList[0]?.id ||
     "";
 
+  const getCategoryName = (categoryId: string | null) => {
+    if (!categoryId) return "Uncategorized";
+    const category = categories.find((c) => c.id === categoryId);
+    return category ? category.name : "Uncategorized";
+  };
+
   const loadData = async () => {
     try {
       const loadedCategories = await ensureShopCategories();

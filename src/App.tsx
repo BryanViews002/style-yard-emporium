@@ -14,6 +14,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import LoadingIntro from "@/components/LoadingIntro";
 import ScrollToTop from "@/components/ScrollToTop";
+import { ParticlesBackground } from "@/components/ParticlesBackground";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -43,7 +44,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const { getTotalItems } = useCart();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
+      <ParticlesBackground />
       <Navigation cartItemsCount={getTotalItems()} />
       <main className="flex-1">{children}</main>
       <Footer />

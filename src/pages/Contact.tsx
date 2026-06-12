@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -29,22 +30,18 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Submit to Formspree
-      const response = await fetch("https://formspree.io/f/xkgpnvly", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      // Submit to Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('send-contact-email', {
+        body: {
           name: formData.name,
           email: formData.email,
           subject: formData.subject || "Contact Form Submission",
           message: formData.message,
-        }),
+        }
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to send message");
+      if (error) {
+        throw new Error(error.message || "Failed to send message");
       }
 
       toast({

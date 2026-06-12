@@ -139,7 +139,7 @@
 @layer components {
   /* Glassmorphism */
   .glass-panel {
-    @apply bg-background/70 backdrop-blur-md border-b border-border/50 shadow-sm supports-[backdrop-filter]:bg-background/60;
+    @apply bg-background/50 backdrop-blur-xl border border-border/30 shadow-elegant supports-[backdrop-filter]:bg-background/40;
   }
 
   /* Loading Animation */

@@ -64,6 +64,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'The Style Yard <noreply@thestyleyard.store>',
         to: [order.email],
+        bcc: ['thestyleyardd@gmail.com'],
         subject: `Order Confirmed ✓ — ${order.order_number}`,
         html: generateOrderConfirmationEmail(order),
       }),
