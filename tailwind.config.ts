@@ -67,9 +67,10 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        heading: ["Plus Jakarta Sans", "sans-serif"],
-        playfair: ["Playfair Display", "serif"],
+        sans:      ["Space Grotesk", "sans-serif"],
+        editorial: ["Cormorant Garamond", "serif"],
+        heading:   ["Cormorant Garamond", "serif"],
+        playfair:  ["Cormorant Garamond", "serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

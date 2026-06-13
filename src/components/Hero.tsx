@@ -1,140 +1,117 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Suspense, useRef } from "react";
 import { Link } from "react-router-dom";
-import heroBanner from "@/assets/hero-banner.jpg";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Hero3D } from "@/components/Hero3D";
+import { ArrowDown } from "lucide-react";
 
 const Hero = () => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const containerRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end start"] });
+  const textY   = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const opacity  = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  const canvasY  = useTransform(scrollYProgress, [0, 1], ["0%", "-15%"]);
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#050505]">
-      {/* Background Image Parallax layer */}
-      <motion.div 
-        className="absolute inset-y-0 right-0 w-full lg:w-[65%] z-0"
-        initial={{ scale: 1.1, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
+    <section ref={containerRef} className="relative min-h-screen flex items-center overflow-hidden bg-[#F8F5EF]">
+      {/* 3D Canvas */}
+      <motion.div
+        style={{ y: canvasY }}
+        className="absolute inset-0 z-0"
       >
-        <div
-          className={`absolute inset-0 bg-[#050505] transition-opacity duration-1000 ${
-            imageLoaded ? "opacity-0" : "opacity-100"
-          }`}
-        />
-        <img
-          src={heroBanner}
-          alt="The Style Yard Fashion Collection"
-          className={`w-full h-full object-cover transition-opacity duration-1000 ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          }`}
-          loading="eager"
-          fetchPriority="high"
-          onLoad={() => setImageLoaded(true)}
-        />
-        {/* Soft edge gradient to blend image into the dark background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent lg:via-[#050505]/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
+        <Suspense fallback={null}>
+          <Hero3D />
+        </Suspense>
       </motion.div>
 
-      {/* Editorial Content */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center pt-20">
-        <div className="w-full lg:w-3/5 text-left">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-4"
-          >
-            <span className="text-premium-gold uppercase tracking-[0.3em] text-xs font-semibold">The New Standard</span>
-          </motion.div>
-          
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-playfair text-white leading-[0.9] tracking-tighter mb-8 mix-blend-difference">
-            <motion.span 
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="block"
-            >
-              Beyond
-            </motion.span>
-            <motion.span 
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="block italic text-transparent bg-clip-text bg-gradient-to-r from-premium-gold to-[#f3e5ab]"
-            >
-              Luxury
-            </motion.span>
-          </h1>
-          
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.8 }}
-            className="text-lg md:text-xl text-gray-400 font-light max-w-md leading-relaxed mb-12 border-l border-premium-gold/30 pl-6"
-          >
-            Curated contemporary fashion, bespoke jewelry, and exquisite fragrances designed for those who command the room.
-          </motion.p>
+      {/* Grain overlay */}
+      <div className="absolute inset-0 z-[1] opacity-[0.03] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E')] bg-[length:256px]" />
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="flex flex-wrap gap-4"
+      {/* Content */}
+      <motion.div
+        style={{ y: textY, opacity }}
+        className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-16 pt-[80px]"
+      >
+        {/* Top label */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3 }}
+          className="mb-8 flex items-center gap-4"
+        >
+          <span className="gold-line" />
+          <span className="t-label">SS — 2026</span>
+        </motion.div>
+
+        {/* Massive Headline */}
+        <div className="overflow-hidden">
+          <motion.h1
+            initial={{ y: 120, opacity: 0 }}
+            animate={{ y: 0,   opacity: 1 }}
+            transition={{ duration: 1.2, ease: [0.2, 0, 0, 1], delay: 0.1 }}
+            className="t-hero"
           >
-            <Link to="/shop?category=clothes">
-              <Button size="lg" className="rounded-none bg-white text-black hover:bg-premium-gold hover:text-black transition-colors duration-500 h-14 px-8 text-xs tracking-[0.2em] uppercase group">
-                Clothes
-                <ArrowRight className="ml-3 h-4 w-4 transition-transform group-hover:translate-x-2" />
-              </Button>
-            </Link>
-            <Link to="/shop?category=jewelry">
-              <Button size="lg" variant="outline" className="rounded-none border-white/20 text-white hover:bg-white hover:text-black transition-colors duration-500 h-14 px-8 text-xs tracking-[0.2em] uppercase backdrop-blur-sm">
-                Jewelry
-              </Button>
-            </Link>
-            <Link to="/shop?category=bags">
-              <Button size="lg" variant="outline" className="rounded-none border-white/20 text-white hover:bg-white hover:text-black transition-colors duration-500 h-14 px-8 text-xs tracking-[0.2em] uppercase backdrop-blur-sm">
-                Bags
-              </Button>
-            </Link>
-            <Link to="/shop?category=perfumes">
-              <Button size="lg" variant="outline" className="rounded-none border-white/20 text-white hover:bg-white hover:text-black transition-colors duration-500 h-14 px-8 text-xs tracking-[0.2em] uppercase backdrop-blur-sm">
-                Perfumes
-              </Button>
-            </Link>
-          </motion.div>
+            The
+          </motion.h1>
         </div>
-      </div>
+        <div className="overflow-hidden">
+          <motion.h1
+            initial={{ y: 120, opacity: 0 }}
+            animate={{ y: 0,   opacity: 1 }}
+            transition={{ duration: 1.2, ease: [0.2, 0, 0, 1], delay: 0.25 }}
+            className="t-hero italic text-gold"
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}
+          >
+            Style Yard.
+          </motion.h1>
+        </div>
+
+        {/* Subline + CTA row */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.8 }}
+          className="mt-14 flex flex-col md:flex-row items-start md:items-end gap-10 md:gap-24"
+        >
+          <p className="t-body max-w-[280px]">
+            Precision-curated fashion, fine accessories, and bespoke fragrances — crafted for those who command every room they enter.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <Link to="/shop">
+              <button className="btn-void" data-cursor>
+                <span>Shop Collection</span>
+                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+              </button>
+            </Link>
+            <Link to="/shop?category=new">
+              <button className="btn-ghost" data-cursor>
+                <span>New Arrivals</span>
+              </button>
+            </Link>
+          </div>
+        </motion.div>
+      </motion.div>
 
       {/* Scroll Indicator */}
-      <motion.div 
-        animate={{ opacity: scrolled ? 0 : 1 }}
-        transition={{ duration: 0.5 }}
-        className="absolute bottom-10 right-10 md:right-auto md:left-1/2 md:transform md:-translate-x-1/2 flex flex-col items-center z-20"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+        style={{ opacity }}
       >
-        <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-4 rotate-90 md:rotate-0 origin-bottom">Scroll</span>
-        <div className="w-[1px] h-16 bg-gray-800 relative overflow-hidden">
-          <motion.div 
-            className="w-full h-1/2 bg-premium-gold absolute top-0"
-            animate={{ top: ['-50%', '150%'] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-          />
-        </div>
+        <span className="t-label text-[0.5rem]">Scroll</span>
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+        >
+          <ArrowDown className="w-3 h-3 text-[--c-stone]" />
+        </motion.div>
       </motion.div>
     </section>
   );
 };
 
 export default Hero;
-

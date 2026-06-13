@@ -1,7 +1,4 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingBag } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +16,7 @@ export interface Product {
   inStock?: boolean;
   stock_quantity?: number;
   category_slug?: string | null;
+  is_featured?: boolean;
 }
 
 interface ProductCardProps {
@@ -26,115 +24,90 @@ interface ProductCardProps {
   onAddToCart?: (product: Product) => void;
 }
 
-const ProductCard = ({ 
-  product, 
-  onAddToCart, 
-}: ProductCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const { user } = useAuth();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { toast } = useToast();
 
   const isFavorite = isInWishlist(product.id);
 
-  const toggleWishlist = async () => {
+  const toggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!user) {
-      toast({ title: "Please log in to add to wishlist", variant: "destructive" });
+      toast({ title: "Please sign in to save items", variant: "destructive" });
       return;
     }
-
-    setIsTogglingWishlist(true);
     try {
       if (isFavorite) {
         await removeFromWishlist(product.id);
         toast({ title: "Removed from wishlist" });
       } else {
         await addToWishlist(product.id);
-        toast({ title: "Added to wishlist" });
+        toast({ title: "Saved to wishlist" });
       }
-    } finally {
-      setIsTogglingWishlist(false);
+    } catch {
+      toast({ title: "Something went wrong", variant: "destructive" });
     }
   };
 
   return (
-    <div 
-      className="product-card group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="relative aspect-square overflow-hidden">
-        <Link to={`/product/${product.id}`} aria-label={`View ${product.name}`}>
-          <img 
-            src={product.image} 
+    <div className="product-minimal group" data-cursor>
+      <Link to={`/product/${product.id}`}>
+        <div className="img-wrap mb-4">
+          <img
+            src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
-        </Link>
-        
-        {/* Overlay Actions */}
-        <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end justify-center gap-2 transition-all duration-300 ease-out translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 z-10">
-          <Button
-            size="sm"
-            className="flex-1 bg-white text-black hover:bg-gray-100 font-medium tracking-wide shadow-xl"
-            onClick={(e) => { e.preventDefault(); onAddToCart?.(product); }}
-          >
-            <ShoppingBag className="h-4 w-4 mr-2" />
-            Quick Add
-          </Button>
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={(e) => { e.preventDefault(); toggleWishlist(); }}
-            disabled={isTogglingWishlist}
-            className={`shadow-xl shrink-0 ${isFavorite ? "text-red-500" : "text-black"} bg-white hover:bg-gray-100`}
-          >
-            <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
-          </Button>
-        </div>
+          <div className="card-overlay" />
 
-        {/* Stock Status */}
-        {product.inStock === false && (
-          <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground px-3 py-1.5 text-xs font-medium rounded-full shadow-lg">
-            Out of Stock
-          </div>
-        )}
-        
-        {/* Low Stock Warning */}
-        {product.inStock !== false && (product as any).stock_quantity && (product as any).stock_quantity <= 5 && (product as any).stock_quantity > 0 && (
-          <div className="absolute top-2 left-2 bg-amber-500 text-white px-3 py-1.5 text-xs font-medium rounded-full shadow-lg">
-            Only {(product as any).stock_quantity} left
-          </div>
-        )}
-      </div>
+          {/* Wishlist */}
+          <button
+            onClick={toggleWishlist}
+            className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-8 h-8 bg-[--c-ivory] flex items-center justify-center"
+            data-cursor
+          >
+            <svg
+              className={`w-4 h-4 transition-colors ${isFavorite ? "text-[--c-void] fill-[--c-void]" : "text-[--c-void]"}`}
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
 
-      {/* Product Info */}
-      <div className="p-4 space-y-1">
-        <div className="flex justify-between items-start gap-2">
-          <h3 className="font-heading font-medium text-base text-foreground truncate">
-            {product.name}
-          </h3>
-          <span className="font-medium text-primary whitespace-nowrap text-base">
-            {formatNaira(product.price)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <p className="text-muted-foreground text-sm font-sans capitalize tracking-wide">
-            {product.category}
-          </p>
-          {product.colors && product.colors.length > 0 && (
-            <div className="flex gap-1.5 items-center">
-              {product.colors.slice(0, 3).map((color, index) => (
-                <div 
-                  key={index}
-                  className="w-3.5 h-3.5 rounded-full border border-border shadow-sm"
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
+          {/* Out of stock */}
+          {product.inStock === false && (
+            <div className="absolute bottom-4 left-4 t-label bg-[--c-ivory] px-2 py-1">
+              Sold Out
             </div>
           )}
+
+          {/* Quick add bar */}
+          {product.inStock !== false && (
+            <div className="quick-add">
+              <button
+                onClick={(e) => { e.preventDefault(); onAddToCart?.(product); }}
+                className="w-full bg-[--c-void] text-[--c-ivory] py-3 t-label hover:bg-[--c-gold] transition-colors"
+                data-cursor
+              >
+                Quick Add
+              </button>
+            </div>
+          )}
+        </div>
+      </Link>
+
+      <div className="flex justify-between items-start px-0.5">
+        <div>
+          <h3 className="text-sm font-medium tracking-wide text-[--c-void] mb-1 line-clamp-1">
+            <Link to={`/product/${product.id}`} className="hover:text-[--c-stone] transition-colors">
+              {product.name}
+            </Link>
+          </h3>
+          <p className="text-xs text-[--c-stone] font-light">
+            {formatNaira(product.price)}
+          </p>
         </div>
       </div>
     </div>

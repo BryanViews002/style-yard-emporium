@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CustomCursor } from "@/components/CustomCursor";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,7 +15,6 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import LoadingIntro from "@/components/LoadingIntro";
 import ScrollToTop from "@/components/ScrollToTop";
-import { ParticlesBackground } from "@/components/ParticlesBackground";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -44,8 +44,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const { getTotalItems } = useCart();
 
   return (
-    <div className="min-h-screen flex flex-col relative">
-      <ParticlesBackground />
+    <div className="min-h-screen flex flex-col relative noise">
+      <CustomCursor />
       <Navigation cartItemsCount={getTotalItems()} />
       <main className="flex-1">{children}</main>
       <Footer />
