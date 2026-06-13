@@ -13,7 +13,7 @@ import { ArrowLeft, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import ShippingCalculator from "@/components/ShippingCalculator";
 import { CouponInput } from "@/components/CouponInput";
-import StripePaymentForm from "@/components/StripePaymentForm";
+import FlutterwavePaymentForm from "@/components/FlutterwavePaymentForm";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -203,7 +203,7 @@ const Checkout = () => {
     }
   };
 
-  const handlePaymentSuccess = async (paymentIntentId: string) => {
+  const handlePaymentSuccess = async (transactionId: string) => {
     try {
       // Update inventory for each product
       for (const item of items) {
@@ -288,7 +288,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen pt-28 pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link to="/cart">
@@ -435,9 +435,13 @@ const Checkout = () => {
                   </Button>
 
                   {currentOrder && (
-                    <StripePaymentForm
+                    <FlutterwavePaymentForm
                       amount={getFinalTotal()}
                       orderId={currentOrder.id}
+                      orderNumber={currentOrder.order_number}
+                      customerEmail={formData.email}
+                      customerName={`${formData.firstName} ${formData.lastName}`}
+                      customerPhone={formData.phone}
                       onPaymentSuccess={handlePaymentSuccess}
                       onPaymentError={handlePaymentError}
                     />

@@ -29,7 +29,7 @@ const Hero = () => {
       {/* Content */}
       <motion.div
         style={{ y: textY, opacity }}
-        className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-16 pt-[80px]"
+        className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-8 md:px-16 pt-[100px] md:pt-[80px]"
       >
         {/* Top label */}
         <motion.div

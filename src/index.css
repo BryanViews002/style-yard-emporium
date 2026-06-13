@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@100;200;300;400;500&family=Space+Grotesk:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,7 +11,6 @@
 
 @layer base {
   :root {
-    /* ── Colour Tokens ── */
     --c-void:       #000000;
     --c-ivory:      #F8F5EF;
     --c-bone:       #EDE9E0;
@@ -45,21 +44,29 @@
     --radius: 0px;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
   html {
     scroll-behavior: smooth;
+    /* Prevent horizontal overflow everywhere */
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   body {
     background: var(--c-ivory);
     color: var(--c-void);
     font-family: 'Space Grotesk', sans-serif;
-    font-weight: 300;
+    font-weight: 400;
     overflow-x: hidden;
+    max-width: 100vw;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    cursor: none; /* We'll use a custom cursor */
+    cursor: none;
   }
 
   ::selection {
@@ -71,48 +78,60 @@
   ::-webkit-scrollbar { width: 2px; }
   ::-webkit-scrollbar-track { background: var(--c-ivory); }
   ::-webkit-scrollbar-thumb { background: var(--c-void); }
+
+  /* Prevent anything from overflowing the viewport width */
+  img, video, canvas, svg { max-width: 100%; }
 }
 
 @layer components {
+
   /* ─── Typography ─────────────────────────────────── */
   .font-editorial { font-family: 'Cormorant Garamond', serif; }
   .font-ui        { font-family: 'Space Grotesk', sans-serif; }
 
+  /* Hero — bold, impactful */
   .t-hero {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(3.5rem, 14vw, 16rem);
-    font-weight: 300;
-    line-height: 0.85;
-    letter-spacing: -0.04em;
+    font-weight: 500;          /* bumped from 300 → 500 */
+    line-height: 0.88;
+    letter-spacing: -0.03em;
     color: var(--c-void);
   }
+
   .t-subhero {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2.5rem, 5vw, 6rem);
-    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 6rem);
+    font-weight: 500;
     letter-spacing: -0.02em;
     line-height: 1;
   }
+
+  /* Section headings — bolder, more commanding */
   .t-section {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(2rem, 4vw, 4.5rem);
-    font-weight: 300;
+    font-weight: 500;          /* bumped from 300 → 500 */
     letter-spacing: -0.02em;
     line-height: 1.1;
   }
+
+  /* Labels — bolder tracking */
   .t-label {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.6rem;
-    font-weight: 500;
-    letter-spacing: 0.25em;
+    font-size: 0.65rem;        /* slightly larger */
+    font-weight: 600;          /* bumped from 500 → 600 */
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--c-stone);
   }
+
+  /* Body — readable weight */
   .t-body {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 300;
-    line-height: 1.8;
+    font-size: 0.9rem;         /* slightly larger */
+    font-weight: 400;          /* bumped from 300 → 400 */
+    line-height: 1.9;
     color: var(--c-stone);
   }
 
@@ -126,7 +145,6 @@
     pointer-events: none;
     z-index: 99999;
     transform: translate(-50%, -50%);
-    transition: transform 0.1s ease;
   }
   .cursor-ring {
     position: fixed;
@@ -137,7 +155,7 @@
     pointer-events: none;
     z-index: 99998;
     transform: translate(-50%, -50%);
-    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+    transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
   }
   .cursor-ring.cursor-hover {
     width: 60px; height: 60px;
@@ -152,16 +170,17 @@
     background: var(--c-void);
     color: var(--c-ivory);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.6rem;
-    font-weight: 500;
-    letter-spacing: 0.25em;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     border: none;
-    padding: 1.1rem 2.8rem;
+    padding: 1.1rem 2.4rem;
     cursor: none;
     transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
   }
   .btn-void::before {
     content: '';
@@ -183,14 +202,15 @@
     background: transparent;
     color: var(--c-void);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.6rem;
-    font-weight: 500;
-    letter-spacing: 0.25em;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     border: 1px solid var(--c-warmgray);
-    padding: 1.1rem 2.8rem;
+    padding: 1.1rem 2.4rem;
     cursor: none;
     transition: all 0.4s ease;
+    white-space: nowrap;
   }
   .btn-ghost:hover {
     border-color: var(--c-void);
@@ -198,6 +218,7 @@
     color: var(--c-ivory);
   }
 
+  /* ─── 3D Canvas ──────────────────────────────────── */
   .canvas-hero {
     position: absolute;
     inset: 0;
@@ -212,7 +233,7 @@
     background: linear-gradient(90deg, transparent, var(--c-warmgray), transparent);
   }
 
-  /* ─── Gold line accents ──────────────────────────── */
+  /* ─── Gold line accent ───────────────────────────── */
   .gold-line {
     display: block;
     width: 40px;
@@ -220,7 +241,7 @@
     background: var(--c-gold);
   }
 
-  /* ─── Product card minimal ───────────────────────── */
+  /* ─── Product card ───────────────────────────────── */
   .product-minimal {
     cursor: none;
   }
@@ -247,19 +268,16 @@
     background: var(--c-void);
     opacity: 0;
     transition: opacity 0.5s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
   .product-minimal:hover .card-overlay {
-    opacity: 0.08;
+    opacity: 0.06;
   }
   .product-minimal .quick-add {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 1rem;
+    padding: 0.75rem;
     transform: translateY(100%);
     transition: transform 0.5s cubic-bezier(0.2, 0, 0, 1);
   }
@@ -267,7 +285,7 @@
     transform: translateY(0);
   }
 
-  /* ─── Nav ────────────────────────────────────────── */
+  /* ─── Navigation ─────────────────────────────────── */
   .nav-3d {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -278,16 +296,16 @@
     transition: background 0.6s ease, border-color 0.6s ease;
   }
   .nav-3d.scrolled {
-    background: rgba(248,245,239,0.9);
+    background: rgba(248,245,239,0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--c-bone);
   }
   .nav-link {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.6rem;
-    font-weight: 500;
-    letter-spacing: 0.25em;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--c-stone);
     transition: color 0.3s ease;
@@ -302,7 +320,7 @@
     inset: 0;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.025;
+    opacity: 0.02;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
     background-size: 256px;
   }
@@ -315,7 +333,7 @@
     width: 100%;
     border-top: 1px solid var(--c-bone);
     border-bottom: 1px solid var(--c-bone);
-    padding: 1.2rem 0;
+    padding: 1rem 0;
   }
   .marquee-inner {
     display: flex;
@@ -328,7 +346,7 @@
     to   { transform: translateX(-50%); }
   }
 
-  /* ─── Scroll reveal states ───────────────────────── */
+  /* ─── Scroll reveal ──────────────────────────────── */
   .reveal {
     opacity: 0;
     transform: translateY(40px);
@@ -350,12 +368,32 @@
 }
 
 @layer utilities {
-  .text-gold { color: var(--c-gold); }
-  .bg-void   { background: var(--c-void); }
-  .bg-ivory  { background: var(--c-ivory); }
-  .bg-bone   { background: var(--c-bone); }
-  .border-bone { border-color: var(--c-bone); }
-  .border-warmgray { border-color: var(--c-warmgray); }
+  .text-gold      { color: var(--c-gold); }
+  .bg-void        { background: var(--c-void); }
+  .bg-ivory       { background: var(--c-ivory); }
+  .bg-bone        { background: var(--c-bone); }
+  .border-bone    { border-color: var(--c-bone); }
+  .border-warmgray{ border-color: var(--c-warmgray); }
 
-  img { image-rendering: -webkit-optimize-contrast; }
+  /* Full-bleed mobile fix: never exceed viewport */
+  .w-full-safe { width: 100%; max-width: 100vw; }
+}
+
+/* ─── Mobile-specific overrides ──────────────────── */
+@media (max-width: 768px) {
+  /* Restore cursor on touch devices */
+  body { cursor: auto; }
+  .cursor-dot, .cursor-ring { display: none; }
+
+  /* Fix any potential side-margin issues */
+  .nav-3d { padding-left: 1rem; padding-right: 1rem; }
+
+  .btn-void, .btn-ghost {
+    padding: 0.9rem 1.8rem;
+    font-size: 0.6rem;
+  }
+
+  /* Hero text even bolder on mobile since screen is small */
+  .t-hero { font-weight: 600; }
+  .t-section { font-weight: 600; }
 }

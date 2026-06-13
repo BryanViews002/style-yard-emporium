@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className="bg-[--c-void] text-[--c-ivory]">
       {/* Top Statement Strip */}
-      <div className="border-b border-[rgba(255,255,255,0.06)] px-6 md:px-16 py-20">
+      <div className="border-b border-[rgba(255,255,255,0.06)] px-4 sm:px-8 md:px-16 py-20">
         <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-end gap-10">
           <div>
             <h2 className="font-editorial text-[clamp(3rem,7vw,7rem)] font-light leading-none tracking-tight">
@@ -30,7 +30,7 @@ const Footer = () => {
       </div>
 
       {/* Link Grid */}
-      <div className="px-6 md:px-16 py-16 border-b border-[rgba(255,255,255,0.06)]">
+      <div className="px-4 sm:px-8 md:px-16 py-16 border-b border-[rgba(255,255,255,0.06)]">
         <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
           <div>
             <span className="t-label text-[--c-stone] block mb-6">Shop</span>
@@ -84,7 +84,7 @@ const Footer = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="px-6 md:px-16 py-8">
+      <div className="px-4 sm:px-8 md:px-16 py-8">
         <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <span className="t-label text-[--c-stone]">
             © {year} The Style Yard. All rights reserved.

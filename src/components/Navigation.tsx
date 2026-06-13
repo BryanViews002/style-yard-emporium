@@ -45,7 +45,7 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
 
   return (
     <>
-      <nav className={`nav-3d px-6 md:px-12 lg:px-20 ${scrolled ? "scrolled" : ""}`}>
+      <nav className={`nav-3d px-4 sm:px-6 md:px-12 lg:px-20 ${scrolled ? "scrolled" : ""}`}>
         <div className="w-full flex justify-between items-center">
 
           {/* Logo */}
