@@ -298,7 +298,7 @@ const Checkout = () => {
     }
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && !orderSuccess) {
     return (
       <div className="min-h-screen py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
