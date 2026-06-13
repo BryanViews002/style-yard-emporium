@@ -55,13 +55,15 @@
     /* Prevent horizontal overflow everywhere */
     overflow-x: hidden;
     max-width: 100vw;
+    /* Scale up the base font size by 12.5% (1rem = 18px instead of 16px) */
+    font-size: 112.5%;
   }
 
   body {
     background: var(--c-ivory);
     color: var(--c-void);
     font-family: 'Space Grotesk', sans-serif;
-    font-weight: 400;
+    font-weight: 500; /* Bumped to medium to make everything inherently bolder */
     overflow-x: hidden;
     max-width: 100vw;
     -webkit-font-smoothing: antialiased;
@@ -93,7 +95,7 @@
   .t-hero {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(3.5rem, 14vw, 16rem);
-    font-weight: 500;          /* bumped from 300 → 500 */
+    font-weight: 600;          /* bumped from 500 → 600 */
     line-height: 0.88;
     letter-spacing: -0.03em;
     color: var(--c-void);
@@ -102,7 +104,7 @@
   .t-subhero {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(2rem, 5vw, 6rem);
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1;
   }
@@ -111,7 +113,7 @@
   .t-section {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(2rem, 4vw, 4.5rem);
-    font-weight: 500;          /* bumped from 300 → 500 */
+    font-weight: 600;          /* bumped from 500 → 600 */
     letter-spacing: -0.02em;
     line-height: 1.1;
   }
@@ -120,7 +122,7 @@
   .t-label {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 0.65rem;        /* slightly larger */
-    font-weight: 600;          /* bumped from 500 → 600 */
+    font-weight: 700;          /* bumped from 600 → 700 */
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--c-stone);
@@ -130,7 +132,7 @@
   .t-body {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 0.9rem;         /* slightly larger */
-    font-weight: 400;          /* bumped from 300 → 400 */
+    font-weight: 500;          /* bumped from 400 → 500 */
     line-height: 1.9;
     color: var(--c-stone);
   }
@@ -304,7 +306,7 @@
   .nav-link {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 0.65rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--c-stone);
@@ -394,6 +396,6 @@
   }
 
   /* Hero text even bolder on mobile since screen is small */
-  .t-hero { font-weight: 600; }
-  .t-section { font-weight: 600; }
+  .t-hero { font-weight: 700; }
+  .t-section { font-weight: 700; }
 }
