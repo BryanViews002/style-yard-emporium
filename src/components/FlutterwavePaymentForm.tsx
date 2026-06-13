@@ -1,5 +1,6 @@
 import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3";
 import { useAuth } from "@/hooks/useAuth";
+import { useRef } from "react";
 
 interface FlutterwavePaymentProps {
   amount: number;       // in Naira (NGN)
@@ -49,20 +50,25 @@ const FlutterwavePaymentForm = ({
   };
 
   const handleFlutterPayment = useFlutterwave(config);
+  const hasCompletedPayment = useRef(false);
 
   const initializePayment = () => {
+    hasCompletedPayment.current = false;
     handleFlutterPayment({
       callback: (response) => {
-        closePaymentModal();
         if (response.status === "successful" || response.status === "completed") {
+          hasCompletedPayment.current = true;
           onPaymentSuccess(String(response.transaction_id));
         } else {
           onPaymentError("Payment was not completed. Please try again.");
         }
+        closePaymentModal();
       },
       onClose: () => {
-        // User closed the modal without completing payment — cancel the order
-        onPaymentCancelled();
+        if (!hasCompletedPayment.current) {
+          // User closed the modal without completing payment — cancel the order
+          onPaymentCancelled();
+        }
       },
     });
   };

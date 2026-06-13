@@ -298,7 +298,18 @@ const Checkout = () => {
     }
   };
 
-  if (items.length === 0 && !orderSuccess) {
+  if (orderSuccess) {
+    return (
+      <OrderSuccess
+        orderNumber={orderSuccess.orderNumber}
+        email={orderSuccess.email}
+        totalAmount={orderSuccess.totalAmount}
+        onDismiss={() => navigate("/orders")}
+      />
+    );
+  }
+
+  if (items.length === 0) {
     return (
       <div className="min-h-screen py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -314,17 +325,6 @@ const Checkout = () => {
   }
 
   return (
-    <>
-      {/* Premium post-payment success overlay */}
-      {orderSuccess && (
-        <OrderSuccess
-          orderNumber={orderSuccess.orderNumber}
-          email={orderSuccess.email}
-          totalAmount={orderSuccess.totalAmount}
-          onDismiss={() => navigate("/orders")}
-        />
-      )}
-
     <div className="min-h-screen pt-28 pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
@@ -583,7 +583,6 @@ const Checkout = () => {
         </div>
       </div>
     </div>
-    </>
   );
 };
 
