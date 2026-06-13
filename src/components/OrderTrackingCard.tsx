@@ -151,7 +151,7 @@ const OrderTrackingCard: React.FC<OrderTrackingCardProps> = ({ order }) => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">${item.total_price.toFixed(2)}</p>
+                  <p className="font-medium">₦{item.total_price.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
                 </div>
               </div>
             ))}
@@ -162,7 +162,7 @@ const OrderTrackingCard: React.FC<OrderTrackingCardProps> = ({ order }) => {
         <div className="pt-3 border-t">
           <div className="flex justify-between items-center">
             <span className="text-lg font-medium">Total</span>
-            <span className="text-lg font-bold">${order.total_amount.toFixed(2)}</span>
+            <span className="text-lg font-bold">₦{order.total_amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
           </div>
         </div>
 

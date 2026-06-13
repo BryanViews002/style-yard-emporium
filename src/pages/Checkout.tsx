@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import ShippingCalculator from "@/components/ShippingCalculator";
 import { CouponInput } from "@/components/CouponInput";
 import FlutterwavePaymentForm from "@/components/FlutterwavePaymentForm";
+import OrderSuccess from "@/components/OrderSuccess";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -27,6 +28,11 @@ const Checkout = () => {
   const [currentOrder, setCurrentOrder] = useState<any>(null);
   const [isFormValid, setIsFormValid] = useState(false);
   const [selectedShipping, setSelectedShipping] = useState<any>(null);
+  const [orderSuccess, setOrderSuccess] = useState<{
+    orderNumber: string;
+    email: string;
+    totalAmount: number;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     email: user?.email || "",
@@ -247,12 +253,12 @@ const Checkout = () => {
       // Clear cart
       clearCart();
 
-      toast({
-        title: "Order placed successfully!",
-        description: `Order #${currentOrder.order_number} has been confirmed.`,
+      // Show premium success screen
+      setOrderSuccess({
+        orderNumber: currentOrder.order_number,
+        email: formData.email,
+        totalAmount: getFinalTotal(),
       });
-
-      navigate("/orders");
     } catch (error: any) {
       console.error("Error completing order:", error);
       toast({
@@ -288,6 +294,17 @@ const Checkout = () => {
   }
 
   return (
+    <>
+      {/* Premium post-payment success overlay */}
+      {orderSuccess && (
+        <OrderSuccess
+          orderNumber={orderSuccess.orderNumber}
+          email={orderSuccess.email}
+          totalAmount={orderSuccess.totalAmount}
+          onDismiss={() => navigate("/orders")}
+        />
+      )}
+
     <div className="min-h-screen pt-28 pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
@@ -545,6 +562,7 @@ const Checkout = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
