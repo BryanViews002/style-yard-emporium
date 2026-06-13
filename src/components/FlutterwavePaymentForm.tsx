@@ -10,6 +10,7 @@ interface FlutterwavePaymentProps {
   customerPhone?: string;
   onPaymentSuccess: (transactionId: string) => void;
   onPaymentError: (error: string) => void;
+  onPaymentCancelled: () => void;
 }
 
 const FLUTTERWAVE_PUBLIC_KEY =
@@ -24,6 +25,7 @@ const FlutterwavePaymentForm = ({
   customerPhone,
   onPaymentSuccess,
   onPaymentError,
+  onPaymentCancelled,
 }: FlutterwavePaymentProps) => {
   const config = {
     public_key: FLUTTERWAVE_PUBLIC_KEY,
@@ -59,7 +61,8 @@ const FlutterwavePaymentForm = ({
         }
       },
       onClose: () => {
-        // User closed modal — no action needed
+        // User closed the modal without completing payment — cancel the order
+        onPaymentCancelled();
       },
     });
   };

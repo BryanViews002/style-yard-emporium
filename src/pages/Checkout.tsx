@@ -278,6 +278,26 @@ const Checkout = () => {
     });
   };
 
+  const handlePaymentCancelled = async () => {
+    // User closed the Flutterwave modal — delete the pending order so it doesn't pollute their history
+    if (!currentOrder) return;
+    try {
+      await supabase
+        .from("orders")
+        .delete()
+        .eq("id", currentOrder.id);
+    } catch (err) {
+      console.error("Failed to delete cancelled order:", err);
+    } finally {
+      // Reset so the user can try again
+      setCurrentOrder(null);
+      toast({
+        title: "Payment cancelled",
+        description: "Your order was not charged. You can try again whenever you're ready.",
+      });
+    }
+  };
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen py-16">
@@ -461,6 +481,7 @@ const Checkout = () => {
                       customerPhone={formData.phone}
                       onPaymentSuccess={handlePaymentSuccess}
                       onPaymentError={handlePaymentError}
+                      onPaymentCancelled={handlePaymentCancelled}
                     />
                   )}
                 </div>
