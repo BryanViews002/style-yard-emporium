@@ -125,7 +125,7 @@ const AdminUsers = () => {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen pt-32 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-4xl font-light tracking-wider text-primary mb-2">User Management</h1>

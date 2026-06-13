@@ -157,7 +157,7 @@ const AdminInventory = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen pt-32 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">Loading inventory data...</div>
         </div>
@@ -166,7 +166,7 @@ const AdminInventory = () => {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen pt-32 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-light tracking-wider text-primary">Inventory Management</h1>
