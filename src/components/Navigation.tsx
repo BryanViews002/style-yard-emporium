@@ -45,7 +45,7 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
 
   return (
     <>
-      <nav className={`nav-3d px-4 sm:px-6 md:px-12 lg:px-20 ${scrolled ? "scrolled" : ""}`}>
+      <nav className={`nav-3d px-4 sm:px-6 md:px-8 lg:px-8 xl:px-20 ${scrolled ? "scrolled" : ""}`}>
         <div className="w-full flex justify-between items-center">
 
           {/* Logo */}
@@ -59,7 +59,7 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
           </Link>
 
           {/* Desktop Links */}
-          <div className="hidden lg:flex items-center gap-10">
+          <div className="hidden lg:flex items-center gap-4 xl:gap-10">
             {navItems.map((item) => (
               <Link key={item.label} to={item.href} className={`nav-link ${isActive(item) ? "active" : ""}`} data-cursor>
                 {item.label}
@@ -68,7 +68,7 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
           </div>
 
           {/* Actions */}
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-4 xl:gap-6">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

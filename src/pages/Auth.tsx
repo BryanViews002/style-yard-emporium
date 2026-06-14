@@ -139,7 +139,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-luxury-rose/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-luxury-rose/10 flex items-center justify-center p-4 pt-28 pb-8">
       <div className="w-full max-w-md">
         <div className="flex items-center mb-8">
           <Link to="/" className="flex items-center text-muted-foreground hover:text-primary transition-colors">
