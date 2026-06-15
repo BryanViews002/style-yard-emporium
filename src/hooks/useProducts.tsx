@@ -27,6 +27,7 @@ export interface Product {
   size_options?: string[];
   color_options?: string[];
   created_at?: string;
+  gender?: string | null;
 }
 
 export const useProducts = () => {
@@ -74,6 +75,7 @@ export const useProducts = () => {
         sku: product.sku,
         brand: product.brand,
         created_at: product.created_at,
+        gender: product.gender ?? null,
         };
       }) as Product[];
     },
@@ -117,6 +119,7 @@ export const useProduct = (id?: string) => {
         category_id: data.category_id,
         sku: data.sku,
         brand: data.brand,
+        gender: (data as any).gender ?? null,
       } as Product;
     },
     enabled: !!id,

@@ -58,6 +58,7 @@ const Shop = () => {
     useState<ShopCategoryFilter>(categoryFromUrl);
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
   const [inStock, setInStock] = useState(false);
+  const [gender, setGender] = useState<string>("all");
 
   const priceCeiling = useMemo(() => getPriceCeiling(products), [products]);
   const activePriceRange = priceRange ?? [0, priceCeiling];
@@ -67,17 +68,20 @@ const Shop = () => {
     setCurrentPage(1);
   }, [categoryFromUrl]);
 
-  const filteredProducts = useMemo(
-    () =>
-      filterProducts(products, categories, {
-        category,
-        searchQuery,
-        priceRange,
-        inStock,
-        sortBy,
-      }),
-    [category, categories, inStock, priceRange, products, searchQuery, sortBy]
-  );
+  const filteredProducts = useMemo(() => {
+    let result = filterProducts(products, categories, {
+      category,
+      searchQuery,
+      priceRange,
+      inStock,
+      sortBy,
+    });
+    // Apply gender filter on top
+    if (gender !== "all") {
+      result = result.filter((p) => (p as any).gender === gender);
+    }
+    return result;
+  }, [category, categories, gender, inStock, priceRange, products, searchQuery, sortBy]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -101,12 +105,14 @@ const Shop = () => {
     setSearchQuery("");
     setPriceRange(null);
     setInStock(false);
+    setGender("all");
     setSearchParams({});
   };
 
   const hasActiveFilters =
     category !== "all" ||
     inStock ||
+    gender !== "all" ||
     Boolean(searchQuery.trim()) ||
     priceRange !== null;
 
@@ -312,6 +318,30 @@ const Shop = () => {
                 </Select>
               </div>
 
+              {/* Gender Filter — only shown for clothing */}
+              {(category === "clothes" || category === "all") && (
+                <div className="space-y-3 mb-6">
+                  <label className="text-sm font-semibold text-foreground">
+                    Gender
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {(["all", "men", "women", "unisex"] as const).map((g) => (
+                      <button
+                        key={g}
+                        onClick={() => setGender(g)}
+                        className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-widest border transition-colors ${
+                          gender === g
+                            ? "bg-[--c-void] text-[--c-ivory] border-[--c-void]"
+                            : "bg-transparent text-[--c-stone] border-[--c-bone] hover:border-[--c-void]"
+                        }`}
+                      >
+                        {g === "all" ? "All" : g.charAt(0).toUpperCase() + g.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-3 mb-6">
                 <label className="text-sm font-semibold text-foreground">
                   Price Range
@@ -365,6 +395,11 @@ const Shop = () => {
                     {inStock && (
                       <Badge variant="secondary" className="text-xs">
                         In Stock
+                      </Badge>
+                    )}
+                    {gender !== "all" && (
+                      <Badge variant="secondary" className="text-xs">
+                        {gender.charAt(0).toUpperCase() + gender.slice(1)}
                       </Badge>
                     )}
                     {priceRange && (

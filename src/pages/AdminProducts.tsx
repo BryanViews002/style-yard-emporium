@@ -59,6 +59,7 @@ interface Product {
   brand: string | null;
   size_options: string[];
   color_options: string[];
+  gender: string | null;
 }
 
 interface ProductCategory extends CategoryRecord {
@@ -97,6 +98,7 @@ const AdminProducts = () => {
     brand: "",
     size_options: "",
     color_options: "",
+    gender: "",
   });
 
   useEffect(() => {
@@ -204,6 +206,7 @@ const AdminProducts = () => {
       brand: "",
       size_options: "",
       color_options: "",
+      gender: "",
     });
     setEditingProduct(null);
   };
@@ -227,6 +230,7 @@ const AdminProducts = () => {
       brand: product.brand || "",
       size_options: product.size_options?.join(", ") || "",
       color_options: product.color_options?.join(", ") || "",
+      gender: (product as any).gender || "",
     });
 
     const { data: images } = await supabase
@@ -266,6 +270,7 @@ const AdminProducts = () => {
         brand: formData.brand || null,
         size_options: parseListInput(formData.size_options),
         color_options: parseListInput(formData.color_options),
+        gender: formData.gender || null,
       };
 
       if (editingProduct) {
@@ -477,6 +482,27 @@ const AdminProducts = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select
+                    value={formData.gender || ""}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, gender: value === "none" ? "" : value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select gender (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Not specified</SelectItem>
+                      <SelectItem value="men">Men</SelectItem>
+                      <SelectItem value="women">Women</SelectItem>
+                      <SelectItem value="unisex">Unisex</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">Helps customers filter clothing by Men / Women / Unisex.</p>
                 </div>
                 <div>
                   <Label htmlFor="size_options">Available Sizes</Label>

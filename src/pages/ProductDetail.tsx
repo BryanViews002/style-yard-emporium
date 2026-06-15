@@ -160,9 +160,16 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-8">
             <div>
-              <p className="text-muted-foreground text-sm uppercase tracking-widest font-medium mb-3">
-                {product.category}
-              </p>
+              <div className="flex items-center gap-3 mb-3">
+                <p className="text-muted-foreground text-sm uppercase tracking-widest font-medium">
+                  {product.category}
+                </p>
+                {product.gender && (
+                  <span className="text-[0.6rem] font-bold tracking-[0.2em] uppercase px-2 py-0.5 border border-[--c-bone] text-[--c-stone]">
+                    {product.gender === "men" ? "Men" : product.gender === "women" ? "Women" : "Unisex"}
+                  </span>
+                )}
+              </div>
               <h1 className="text-4xl md:text-5xl font-heading font-medium tracking-tight text-primary mb-6">
                 {product.name}
               </h1>
