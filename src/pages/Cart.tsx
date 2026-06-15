@@ -43,7 +43,7 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen py-16">
+      <div className="min-h-screen pt-32 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-fade-in-scale">
             <ShoppingBag className="mx-auto h-24 w-24 text-muted-foreground mb-8" />
@@ -66,7 +66,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen pt-28 pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -185,14 +185,10 @@ const Cart = () => {
                 <span className="text-muted-foreground">Shipping</span>
                 <span>Free</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Tax</span>
-                <span>₦{(getTotalPrice() * 0.08).toFixed(2)}</span>
-              </div>
               <div className="border-t border-border/50 pt-4">
                 <div className="flex justify-between text-lg">
                   <span className="font-medium">Total</span>
-                  <span className="font-medium">₦{(getTotalPrice() * 1.08).toFixed(2)}</span>
+                  <span className="font-medium">₦{getTotalPrice().toFixed(2)}</span>
                 </div>
               </div>
             </div>

@@ -180,7 +180,7 @@ const Home = () => {
               initial={{ opacity: 0, y: 40 }}
               animate={featInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 1, delay: 0.2, staggerChildren: 0.1 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-14"
+              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-3 sm:gap-x-8 gap-y-8 sm:gap-y-14"
             >
               {featured.map((p) => (
                 <ProductCard key={p.id} product={p} onAddToCart={addToCart} />
