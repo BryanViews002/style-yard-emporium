@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "@/components/ProductCard";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
@@ -143,7 +143,15 @@ const Shop = () => {
   const categoryTitle =
     category === "all" ? "Shop Our Collection" : `${getCategoryLabel(category)} Collection`;
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const productGridRef = useRef<HTMLDivElement>(null);
+
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    // Scroll to top of product grid
+    setTimeout(() => {
+      productGridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
 
   if (isLoading) {
     return (
@@ -216,42 +224,22 @@ const Shop = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-            <div className="bg-card border border-border/50 rounded-lg p-3 md:p-4 text-center">
-              <Package className="h-4 md:h-5 w-4 md:w-5 mx-auto mb-1.5 md:mb-2 text-muted-foreground" />
-              <div className="text-xl md:text-2xl font-light text-primary">
-                {products.length}
-              </div>
-              <div className="text-[10px] md:text-xs text-muted-foreground">
-                Total Products
-              </div>
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="bg-card border border-border/50 rounded px-2 py-2 text-center">
+              <div className="text-base font-light text-primary">{products.length}</div>
+              <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Total</div>
             </div>
-            <div className="bg-card border border-border/50 rounded-lg p-3 md:p-4 text-center">
-              <Filter className="h-4 md:h-5 w-4 md:w-5 mx-auto mb-1.5 md:mb-2 text-muted-foreground" />
-              <div className="text-xl md:text-2xl font-light text-primary">
-                {filteredProducts.length}
-              </div>
-              <div className="text-[10px] md:text-xs text-muted-foreground">
-                Showing
-              </div>
+            <div className="bg-card border border-border/50 rounded px-2 py-2 text-center">
+              <div className="text-base font-light text-primary">{filteredProducts.length}</div>
+              <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Showing</div>
             </div>
-            <div className="bg-card border border-border/50 rounded-lg p-3 md:p-4 text-center">
-              <TrendingUp className="h-4 md:h-5 w-4 md:w-5 mx-auto mb-1.5 md:mb-2 text-muted-foreground" />
-              <div className="text-xl md:text-2xl font-light text-primary">
-                {SHOP_CATEGORIES.length}
-              </div>
-              <div className="text-[10px] md:text-xs text-muted-foreground">
-                Categories
-              </div>
+            <div className="bg-card border border-border/50 rounded px-2 py-2 text-center">
+              <div className="text-base font-light text-primary">{SHOP_CATEGORIES.length}</div>
+              <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Categories</div>
             </div>
-            <div className="bg-card border border-border/50 rounded-lg p-3 md:p-4 text-center">
-              <Star className="h-4 md:h-5 w-4 md:w-5 mx-auto mb-1.5 md:mb-2 text-accent" />
-              <div className="text-xl md:text-2xl font-light text-primary">
-                {products.filter((product) => product.is_featured).length}
-              </div>
-              <div className="text-[10px] md:text-xs text-muted-foreground">
-                Featured
-              </div>
+            <div className="bg-card border border-border/50 rounded px-2 py-2 text-center">
+              <div className="text-base font-light text-primary">{products.filter((p) => p.is_featured).length}</div>
+              <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Featured</div>
             </div>
           </div>
         </div>
@@ -269,33 +257,33 @@ const Shop = () => {
           </div>
 
           <div
-            className={`lg:w-72 space-y-6 ${
+            className={`lg:w-56 space-y-4 ${
               showFilters || "hidden lg:block"
             }`}
           >
-            <div className="bg-card p-6 rounded-lg border-2 border-border/50 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-card p-4 rounded-lg border border-border/50 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-5 w-5 text-accent" />
-                  <h3 className="text-xl font-light">Filters</h3>
+                  <SlidersHorizontal className="h-4 w-4 text-accent" />
+                  <h3 className="text-sm font-semibold">Filters</h3>
                 </div>
                 {hasActiveFilters && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={clearFilters}
-                    className="text-xs"
+                    className="text-xs h-7 px-2"
                   >
                     <X className="h-3 w-3 mr-1" />
-                    Clear All
+                    Clear
                   </Button>
                 )}
               </div>
-              <Separator className="mb-6" />
+              <Separator className="mb-4" />
 
-              <div className="space-y-3 mb-6">
-                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <LayoutGrid className="h-4 w-4" />
+              <div className="space-y-2 mb-4">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                  <LayoutGrid className="h-3 w-3" />
                   Category
                 </label>
                 <Select
@@ -319,10 +307,8 @@ const Shop = () => {
               </div>
 
 
-              <div className="space-y-3 mb-6">
-                <label className="text-sm font-semibold text-foreground">
-                  Price Range
-                </label>
+              <div className="space-y-2 mb-4">
+                <label className="text-xs font-semibold text-foreground">Price Range</label>
                 <div className="flex justify-between text-sm text-muted-foreground mb-2">
                   <span className="font-medium">
                     {formatNaira(activePriceRange[0])}
@@ -343,16 +329,16 @@ const Shop = () => {
                 />
               </div>
 
-              <div className="space-y-3">
-                <label className="flex items-center space-x-3 cursor-pointer group">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={inStock}
                     onChange={(event) => setInStock(event.target.checked)}
-                    className="rounded border-border w-5 h-5 text-accent focus:ring-accent"
+                    className="rounded border-border w-4 h-4 text-accent focus:ring-accent"
                   />
-                  <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">
-                    <Package className="h-4 w-4 inline mr-1" />
+                  <span className="text-xs font-medium text-foreground group-hover:text-accent transition-colors">
+                    <Package className="h-3 w-3 inline mr-1" />
                     In Stock Only
                   </span>
                 </label>
@@ -461,9 +447,9 @@ const Shop = () => {
               </div>
             </div>
 
-            {/* Gender Tab Bar — appears above grid when in clothing */}
-            {(category === "clothes" || category === "all") && (
-              <div className="mb-6">
+            {/* Gender Tab Bar — shown for clothes, bags, perfumes & all */}
+            {(category === "clothes" || category === "bags" || category === "perfumes" || category === "all") && (
+              <div className="mb-6" ref={productGridRef}>
                 <div className="flex border-b border-[--c-bone]">
                   {(["all", "men", "women", "unisex"] as const).map((g) => (
                     <button
