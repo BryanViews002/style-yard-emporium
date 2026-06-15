@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://www.thestyleyard.store/</loc>
+    <lastmod>2025-06-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.thestyleyard.store/IMG_4121.png</image:loc>
+      <image:title>The Style Yard – Luxury Fashion &amp; Jewelry</image:title>
+    </image:image>
+  </url>
+
+  <!-- Shop / All Products -->
+  <url>
+    <loc>https://www.thestyleyard.store/shop</loc>
+    <lastmod>2025-06-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Category: Clothes -->
+  <url>
+    <loc>https://www.thestyleyard.store/shop?category=clothes</loc>
+    <lastmod>2025-06-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Category: Jewelry -->
+  <url>
+    <loc>https://www.thestyleyard.store/shop?category=jewelry</loc>
+    <lastmod>2025-06-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Category: Bags -->
+  <url>
+    <loc>https://www.thestyleyard.store/shop?category=bags</loc>
+    <lastmod>2025-06-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Category: Perfumes -->
+  <url>
+    <loc>https://www.thestyleyard.store/shop?category=perfumes</loc>
+    <lastmod>2025-06-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Contact -->
+  <url>
+    <loc>https://www.thestyleyard.store/contact</loc>
+    <lastmod>2025-06-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+</urlset>
