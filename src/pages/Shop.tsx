@@ -318,29 +318,6 @@ const Shop = () => {
                 </Select>
               </div>
 
-              {/* Gender Filter — only shown for clothing */}
-              {(category === "clothes" || category === "all") && (
-                <div className="space-y-3 mb-6">
-                  <label className="text-sm font-semibold text-foreground">
-                    Gender
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {(["all", "men", "women", "unisex"] as const).map((g) => (
-                      <button
-                        key={g}
-                        onClick={() => setGender(g)}
-                        className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-widest border transition-colors ${
-                          gender === g
-                            ? "bg-[--c-void] text-[--c-ivory] border-[--c-void]"
-                            : "bg-transparent text-[--c-stone] border-[--c-bone] hover:border-[--c-void]"
-                        }`}
-                      >
-                        {g === "all" ? "All" : g.charAt(0).toUpperCase() + g.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               <div className="space-y-3 mb-6">
                 <label className="text-sm font-semibold text-foreground">
@@ -483,6 +460,30 @@ const Shop = () => {
                 </div>
               </div>
             </div>
+
+            {/* Gender Tab Bar — appears above grid when in clothing */}
+            {(category === "clothes" || category === "all") && (
+              <div className="mb-6">
+                <div className="flex border-b border-[--c-bone]">
+                  {(["all", "men", "women", "unisex"] as const).map((g) => (
+                    <button
+                      key={g}
+                      onClick={() => setGender(g)}
+                      className={`relative px-6 py-3 text-xs font-bold tracking-[0.2em] uppercase transition-colors ${
+                        gender === g
+                          ? "text-[--c-void]"
+                          : "text-[--c-stone] hover:text-[--c-void]"
+                      }`}
+                    >
+                      {g === "all" ? "All" : g === "men" ? "Men" : g === "women" ? "Women" : "Unisex"}
+                      {gender === g && (
+                        <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[--c-void]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div
               className={`grid grid-cols-1 sm:grid-cols-2 ${
