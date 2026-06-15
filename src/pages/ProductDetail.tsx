@@ -189,9 +189,14 @@ const ProductDetail = () => {
                   </span>
                 </div>
               </div>
-              <p className="text-muted-foreground leading-relaxed text-lg">
-                {product.description}
-              </p>
+              {product.description && (
+                <div className="border-t border-[--c-bone] pt-6">
+                  <p className="t-label text-[--c-stone] mb-3">About this piece</p>
+                  <p className="text-[--c-stone] leading-relaxed text-base font-light whitespace-pre-line">
+                    {product.description}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Product Options */}

@@ -382,8 +382,10 @@ const AdminProducts = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    rows={3}
+                    rows={5}
+                    placeholder="Describe the product — material, fit, occasion, unique details..."
                   />
+                  <p className="text-xs text-muted-foreground mt-1">This appears on the product page for customers to read.</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
