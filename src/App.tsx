@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { CustomCursor } from "@/components/CustomCursor";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -45,7 +44,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen flex flex-col relative noise">
-      <CustomCursor />
       <Navigation cartItemsCount={getTotalItems()} />
       <main className="flex-1">{children}</main>
       <Footer />

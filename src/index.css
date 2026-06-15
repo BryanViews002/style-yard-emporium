@@ -68,7 +68,6 @@
     max-width: 100vw;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    cursor: none;
   }
 
   ::selection {
@@ -137,32 +136,6 @@
     color: var(--c-stone);
   }
 
-  /* ─── Custom Cursor ─────────────────────────────── */
-  .cursor-dot {
-    position: fixed;
-    top: 0; left: 0;
-    width: 8px; height: 8px;
-    background: var(--c-void);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 99999;
-    transform: translate(-50%, -50%);
-  }
-  .cursor-ring {
-    position: fixed;
-    top: 0; left: 0;
-    width: 36px; height: 36px;
-    border: 1px solid var(--c-void);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 99998;
-    transform: translate(-50%, -50%);
-    transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
-  }
-  .cursor-ring.cursor-hover {
-    width: 60px; height: 60px;
-    opacity: 0.5;
-  }
 
   /* ─── Buttons ─────────────────────────────────────── */
   .btn-void {
@@ -178,7 +151,6 @@
     text-transform: uppercase;
     border: none;
     padding: 1.1rem 2.4rem;
-    cursor: none;
     transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
     position: relative;
     overflow: hidden;
@@ -210,7 +182,6 @@
     text-transform: uppercase;
     border: 1px solid var(--c-warmgray);
     padding: 1.1rem 2.4rem;
-    cursor: none;
     transition: all 0.4s ease;
     white-space: nowrap;
   }
@@ -245,7 +216,6 @@
 
   /* ─── Product card ───────────────────────────────── */
   .product-minimal {
-    cursor: none;
   }
   .product-minimal .img-wrap {
     position: relative;
@@ -311,7 +281,6 @@
     text-transform: uppercase;
     color: var(--c-stone);
     transition: color 0.3s ease;
-    cursor: none;
   }
   .nav-link:hover, .nav-link.active { color: var(--c-void); }
 
@@ -383,9 +352,6 @@
 
 /* ─── Mobile-specific overrides ──────────────────── */
 @media (max-width: 768px) {
-  /* Restore cursor on touch devices */
-  body { cursor: auto; }
-  .cursor-dot, .cursor-ring { display: none; }
 
   /* Fix any potential side-margin issues */
   .nav-3d { padding-left: 1rem; padding-right: 1rem; }
