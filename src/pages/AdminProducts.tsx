@@ -502,7 +502,7 @@ const AdminProducts = () => {
                       <SelectItem value="unisex">Unisex</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground mt-1">Helps customers filter clothing by Men / Women / Unisex.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Helps customers filter clothing and perfumes by Men / Women / Unisex.</p>
                 </div>
                 <div>
                   <Label htmlFor="size_options">Available Sizes</Label>
