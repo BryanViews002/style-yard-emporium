@@ -90,10 +90,91 @@ const CategoryBlock = ({ cat, index }: { cat: typeof categories[0]; index: numbe
   );
 };
 
+const EditorialCard = ({ product, index, onAddToCart }: { product: any, index: number, onAddToCart: any }) => {
+  if (!product) return null;
+  // Make indices 0 and 3 span 7 columns, and 1 and 2 span 5 columns on desktop
+  const isLarge = index === 0 || index === 3;
+  
+  return (
+    <motion.div 
+      className={`group relative overflow-hidden bg-[--c-bone] col-span-1 ${isLarge ? 'md:col-span-7 aspect-[4/5] md:aspect-[16/10]' : 'md:col-span-5 aspect-[4/5] md:aspect-square'}`}
+    >
+      <Link to={`/product/${product.id}`} className="absolute inset-0 z-10">
+        <span className="sr-only">View {product.name}</span>
+      </Link>
+      
+      <img 
+        src={product.image} 
+        alt={product.name}
+        className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out group-hover:scale-105"
+      />
+      
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      {/* Content */}
+      <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-10 pointer-events-none">
+        <div className="flex justify-between items-start">
+          <span className="bg-[--c-void] text-[--c-ivory] px-3 py-1 text-[0.65rem] tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 transform translate-y-2 group-hover:translate-y-0">
+            {product.category || 'Featured'}
+          </span>
+        </div>
+        
+        <div className="flex justify-between items-end transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 ease-out">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+            <h3 className="font-editorial text-3xl md:text-5xl text-[--c-ivory] mb-2">{product.name}</h3>
+            <p className="text-[--c-ivory] font-light tracking-wide text-lg">₦{product.price.toLocaleString()}</p>
+          </div>
+          
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              onAddToCart(product);
+            }}
+            className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[--c-ivory] text-[--c-void] flex items-center justify-center hover:bg-gold hover:text-[--c-void] transition-colors duration-300 pointer-events-auto opacity-0 group-hover:opacity-100 delay-200"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M12 5V19M5 12H19" strokeLinecap="square" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 const Home = () => {
   const { addToCart } = useCart();
   const { data: allProducts = [] } = useProducts();
-  const featured = allProducts.filter((p) => p.is_featured).slice(0, 4);
+  
+  // Helper to find the best product: prioritize featured, fallback to first available
+  const getPeakProduct = (slugMatch: string, nameMatch: string) => {
+    const inCategory = allProducts.filter(p => p.category_slug === slugMatch || p.category?.toLowerCase().includes(nameMatch));
+    return inCategory.find(p => p.is_featured) || inCategory[0];
+  };
+
+  const clothes = getPeakProduct('clothes', 'clothes');
+  const perfumes = getPeakProduct('perfumes', 'perfume');
+  const bags = getPeakProduct('bags', 'bag');
+  const jewelry = getPeakProduct('jewelry', 'jewel');
+  
+  let curated = [clothes, perfumes, bags, jewelry].filter(Boolean);
+  
+  if (curated.length < 4) {
+    const curatedIds = new Set(curated.map(p => p?.id));
+    let extra = allProducts.filter(p => p.is_featured && !curatedIds.has(p.id));
+    
+    // Fallback to any products if we don't have enough featured ones
+    if (curated.length + extra.length < 4) {
+      const extraIds = new Set([...curatedIds, ...extra.map(p => p.id)]);
+      const moreExtra = allProducts.filter(p => !extraIds.has(p.id));
+      extra = [...extra, ...moreExtra];
+    }
+    
+    curated = [...curated, ...extra].slice(0, 4);
+  }
+  
+  const featured = curated;
 
   const featRef = useRef(null);
   const featInView = useInView(featRef, { once: true, margin: "-100px" });
@@ -180,10 +261,10 @@ const Home = () => {
               initial={{ opacity: 0, y: 40 }}
               animate={featInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 1, delay: 0.2, staggerChildren: 0.1 }}
-              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-3 sm:gap-x-8 gap-y-8 sm:gap-y-14"
+              className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8"
             >
-              {featured.map((p) => (
-                <ProductCard key={p.id} product={p} onAddToCart={addToCart} />
+              {featured.map((p, i) => (
+                <EditorialCard key={p.id} product={p} index={i} onAddToCart={addToCart} />
               ))}
             </motion.div>
           ) : (
