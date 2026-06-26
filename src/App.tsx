@@ -34,6 +34,10 @@ import Wishlist from "./pages/Wishlist";
 import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import About from "./pages/About";
+import ShippingPolicy from "./pages/ShippingPolicy";
+import Returns from "./pages/Returns";
+import SizeGuide from "./pages/SizeGuide";
 import { useCart } from "@/context/CartContext";
 
 const queryClient = new QueryClient();
@@ -71,6 +75,10 @@ const AppContent = () => {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/shipping-policy" element={<ShippingPolicy />} />
+        <Route path="/returns" element={<Returns />} />
+        <Route path="/size-guide" element={<SizeGuide />} />
         <Route path="/auth" element={<Auth />} />
         <Route
           path="/checkout"

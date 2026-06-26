@@ -19,11 +19,12 @@ const Footer = () => {
           <div className="flex flex-col items-start md:items-end gap-4">
             <span className="t-label text-[--c-stone]">Follow</span>
             <div className="flex gap-6">
-              {["Instagram", "TikTok", "Pinterest"].map((s) => (
-                <a key={s} href="#" className="nav-link text-[--c-warmgray] hover:text-[--c-ivory]" data-cursor>
-                  {s}
-                </a>
-              ))}
+              <a href="https://instagram.com/thestyleyard_01" target="_blank" rel="noopener noreferrer" className="nav-link text-[--c-warmgray] hover:text-[--c-ivory]" data-cursor>
+                Instagram
+              </a>
+              <a href="#" className="nav-link text-[--c-warmgray] hover:text-[--c-ivory]" data-cursor>
+                TikTok
+              </a>
             </div>
           </div>
         </div>
@@ -59,10 +60,16 @@ const Footer = () => {
           <div>
             <span className="t-label text-[--c-stone] block mb-6">Info</span>
             <ul className="space-y-3">
-              {["About Us", "Contact", "Shipping Policy", "Returns", "Size Guide"].map((item) => (
-                <li key={item}>
-                  <Link to="/contact" className="nav-link text-[--c-warmgray] hover:text-[--c-ivory] text-[0.75rem] tracking-wide normal-case font-light" data-cursor>
-                    {item}
+              {[
+                { name: "About Us", path: "/about" },
+                { name: "Contact", path: "/contact" },
+                { name: "Shipping Policy", path: "/shipping-policy" },
+                { name: "Returns", path: "/returns" },
+                { name: "Size Guide", path: "/size-guide" }
+              ].map((item) => (
+                <li key={item.name}>
+                  <Link to={item.path} className="nav-link text-[--c-warmgray] hover:text-[--c-ivory] text-[0.75rem] tracking-wide normal-case font-light" data-cursor>
+                    {item.name}
                   </Link>
                 </li>
               ))}

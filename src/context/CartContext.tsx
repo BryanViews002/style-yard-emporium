@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { Product } from "@/components/ProductCard";
+import { toast } from "sonner";
 
 interface CartItem extends Product {
   quantity: number;
@@ -38,6 +39,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       const initialQuantity = product.stock_quantity != null ? Math.min(quantity, product.stock_quantity) : quantity;
       return [...prevItems, { ...product, quantity: initialQuantity, selectedSize: size, selectedColor: color }];
+    });
+
+    toast.success("Added to cart", {
+      description: `${quantity}x ${product.name} has been added to your cart.`
     });
   };
 
