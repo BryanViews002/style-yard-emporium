@@ -20,6 +20,7 @@ const Auth = () => {
     password: "",
     firstName: "",
     lastName: "",
+    phone: "",
   });
   const navigate = useNavigate();
 
@@ -38,8 +39,8 @@ const Auth = () => {
       return false;
     }
 
-    if (isSignUp && (!formData.firstName || !formData.lastName)) {
-      toast.error("First name and last name are required");
+    if (isSignUp && (!formData.firstName || !formData.lastName || !formData.phone)) {
+      toast.error("First name, last name, and phone number are required");
       return false;
     }
 
@@ -62,6 +63,7 @@ const Auth = () => {
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
+            phone: formData.phone,
           },
         },
       });
@@ -274,6 +276,18 @@ const Auth = () => {
                         required
                       />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
