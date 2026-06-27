@@ -154,7 +154,7 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[999] bg-[--c-ivory] flex flex-col pt-24"
+            className="fixed inset-0 z-[999] bg-[--c-ivory] flex flex-col pt-24 overflow-y-auto"
           >
             <div className="flex flex-col px-8 py-6 flex-1">
               {navItems.map((item, i) => (

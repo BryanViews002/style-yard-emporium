@@ -234,7 +234,7 @@ const Home = () => {
       <section ref={featRef} className="py-32 bg-[--c-bone]">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-8 md:px-16">
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={featInView ? { opacity: 1, y: 0 } : {}}
