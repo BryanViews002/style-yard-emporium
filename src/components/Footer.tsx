@@ -8,13 +8,16 @@ const Footer = () => {
       {/* Top Statement Strip */}
       <div className="border-b border-[rgba(255,255,255,0.06)] px-4 sm:px-8 md:px-16 py-20">
         <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-end gap-10">
-          <div>
-            <h2 className="font-editorial text-[clamp(3rem,7vw,7rem)] font-light leading-none tracking-tight">
-              The Style Yard
-            </h2>
-            <span className="t-label text-[--c-stone] block mt-4">
-              Lagos · Premium Fashion House · Est. 2024
-            </span>
+          <div className="flex items-center gap-6 md:gap-10">
+            <img src="/IMG_4121.png" alt="Logo" className="w-16 h-16 md:w-28 md:h-28 object-cover rounded-full drop-shadow-md opacity-90" />
+            <div>
+              <h2 className="font-editorial text-[clamp(2.5rem,7vw,7rem)] font-light leading-none tracking-tight">
+                The Style Yard
+              </h2>
+              <span className="t-label text-[--c-stone] block mt-4">
+                Lagos · Premium Fashion House · Est. 2024
+              </span>
+            </div>
           </div>
           <div className="flex flex-col items-start md:items-end gap-4">
             <span className="t-label text-[--c-stone]">Follow</span>

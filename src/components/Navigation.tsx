@@ -49,13 +49,16 @@ const Navigation = ({ cartItemsCount = 0 }: { cartItemsCount?: number }) => {
         <div className="w-full flex justify-between items-center">
 
           {/* Logo */}
-          <Link to="/" className="flex flex-col" data-cursor>
-            <span className="font-editorial text-[1.3rem] leading-none tracking-tight text-[--c-void]">
-              The Style Yard
-            </span>
-            <span className="t-label tracking-[0.3em] text-[0.45rem] text-gold mt-0.5">
-              Lagos · Premium Fashion
-            </span>
+          <Link to="/" className="flex items-center gap-3" data-cursor>
+            <img src="/IMG_4121.png" alt="Logo" className="w-10 h-10 object-cover rounded-full drop-shadow-md" />
+            <div className="flex flex-col">
+              <span className="font-editorial text-[1.3rem] leading-none tracking-tight text-[--c-void]">
+                The Style Yard
+              </span>
+              <span className="t-label tracking-[0.3em] text-[0.45rem] text-gold mt-0.5">
+                Lagos · Premium Fashion
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Links */}

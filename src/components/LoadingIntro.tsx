@@ -45,7 +45,7 @@ const LoadingIntro = ({ onComplete }: { onComplete: () => void }) => {
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
           style={{ background: "#0A0905" }}
         >
-          {/* 3D Sphere */}
+          {/* 3D Liquid Sphere */}
           <div className="w-36 h-36 mb-10">
             <Canvas camera={{ position: [0, 0, 3.5], fov: 45 }}>
               <ambientLight intensity={0.2} />
